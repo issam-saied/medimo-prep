@@ -1,0 +1,149 @@
+<?php
+
+namespace App\Services;
+
+use App\Events\AdministrationUpdated;
+use App\Models\Administration;
+use App\Models\Prescription;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+use App\Events\AdministrationCreated;
+use Illuminate\Pagination\LengthAwarePaginator;
+
+class AdministrationService
+{
+    public function getFilteredAdministrations(array $filters): LengthAwarePaginator
+    {
+        $query = Administration::with([
+            'user:id,name,job_title,organization',
+            'prescription:id,patient_id,medication_id,prescriber_id,dosage,frequency,status',
+            'prescription.patient:id,name',
+            'prescription.medication:id,name',
+        ]);
+
+        // Filter by status if provided in the request
+        if (!empty($filters['status'] ?? null)) {
+            $query->where('status', $filters['status']);
+        }
+
+        $relationNameFilters = [
+            'patient_name' => 'patient',
+            'medication_name' => 'medication',
+            'prescriber_name' => 'prescriber',
+        ];
+
+        // Filter by patient_id if provided in the request
+/*        if (!empty($filters['patient_name'])) {
+
+            $query->whereHas('prescription.patient', function ($q) use ($filters) {
+                $q->where('name', 'like', '%' . $filters['patient_name'] . '%');
+            });
+        }*/
+
+        foreach ($relationNameFilters as $filterKey => $relation) {
+            $searchValue = $filters[$filterKey] ?? null;
+
+            if (!empty($searchValue)) {
+                $query->whereHas('prescription.' . $relation, function ($q) use ($searchValue) {
+                    $q->where('name', 'like', '%' . $searchValue . '%');
+                });
+            }
+        }
+
+        $sortDirection = $filters['sort_direction'] ?? 'desc';
+        $sortField = $filters['sort_field'] ?? 'administered_at';
+
+        $sortableRelations = [
+            'patient' => [
+                'table' => 'patients',
+                'foreign_key' => 'prescriptions.patient_id',
+                'column' => 'patients.name',
+            ],
+            'medication' => [
+                'table' => 'medications',
+                'foreign_key' => 'prescriptions.medication_id',
+                'column' => 'medications.name',
+            ],
+            'prescriber' => [
+                'table' => 'users',
+                'foreign_key' => 'prescriptions.prescriber_id',
+                'column' => 'users.name',
+            ],
+        ];
+
+        if (isset($sortableRelations[$sortField])) {
+            $relation = $sortableRelations[$sortField];
+
+            $query->join('prescriptions', 'administrations.prescription_id', '=', 'prescriptions.id')
+                ->join($relation['table'], $relation['foreign_key'], '=', $relation['table'] . '.id')
+                ->orderBy($relation['column'], $sortDirection)
+                ->select('administrations.*');
+        } else {
+            $query->orderBy($sortField, $sortDirection);
+        }
+
+        return $query->paginate(5);
+    }
+
+    public function create(array $data): Administration
+    {
+        //transaction to ensure data integrity, if any validation fails,
+        //the transaction will be rolled back and no administration record will be created
+        return DB::transaction(function () use ($data) {
+
+            $prescription = Prescription::findOrFail($data['prescription_id']);
+
+            //Business rule: Administration allowed only for active prescription
+            if ($prescription->status !== 'active') {
+                throw ValidationException::withMessages([
+                    'prescription_id' => 'Cannot administer medication on non-active prescription.',
+                ]);
+            }
+
+            //Carbon:parse to make sure no string comparisons, clearly readable, correct with null end_date
+            $administeredAt = Carbon::parse($data['administered_at']);
+            $startDate = Carbon::parse($prescription->start_date);
+
+            //We can use isBefore or lt to compare the dates, lt (less than) is more concise and readable in this context
+            if ($administeredAt->lt($startDate)) {
+                throw ValidationException::withMessages([
+                    'administered_at' => 'Administration time cannot be before the prescription start date.',
+                ]);
+            }
+
+            if ($prescription->end_date !== null) {
+                $endDate = Carbon::parse($prescription->end_date);
+
+               //We can use isAfter or gt to compare the dates, gt (greater than) is more concise and readable in this context
+                if ($administeredAt->gt($endDate)) {
+                    throw ValidationException::withMessages([
+                        'administered_at' => 'Administration time cannot be after the prescription end date.',
+                    ]);
+                }
+            }
+
+            $data['user_id'] = auth()->id();
+
+            $administration = Administration::create($data);
+
+            event(new AdministrationCreated($administration));
+
+            return $administration;
+        });
+    }
+
+    public function update(int $id, array $data): Administration
+    {
+        $administration = Administration::findOrFail($id);
+
+        $administration->update([
+            'note' => $data['note'] ?? $administration->note,
+        ]);
+
+        event(new AdministrationUpdated($administration));
+
+        return $administration;
+    }
+}
