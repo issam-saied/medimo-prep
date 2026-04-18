@@ -119,7 +119,7 @@ onMounted(async () => {
                     for="name"
                     :class="['mb-2 block text-sm font-medium', hasError('name') ? 'text-red-600' : 'text-gray-700']"
                 >
-                    Name
+                    Name -
                 </label>
                 <input
                     v-model="form.name"
