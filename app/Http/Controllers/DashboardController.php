@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Administration;
+use App\Models\Patient;
 use App\Models\Prescription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -54,6 +56,34 @@ class DashboardController extends Controller
                 ->contains('user_id', $user->id),
         ]);
 
-        return response()->json(['data' => $prescriptions]);
+        $todayAdministrations = Administration::whereDate('administered_at', $date);
+
+        $recentActivity = Administration::with([
+            'user:id,name',
+            'prescription.patient:id,name',
+            'prescription.medication:id,name,strength,unit',
+        ])
+            ->latest('administered_at')
+            ->limit(5)
+            ->get()
+            ->map(fn($adm) => [
+                'id'             => $adm->id,
+                'status'         => $adm->status,
+                'administered_at' => $adm->administered_at,
+                'nurse'          => $adm->user->name,
+                'patient'        => $adm->prescription->patient->name,
+                'medication'     => $adm->prescription->medication->name . ' ' . $adm->prescription->medication->strength,
+            ]);
+
+        $stats = [
+            'active_prescriptions' => Prescription::where('status', 'active')->count(),
+            'total_patients'       => Patient::count(),
+            'given_today'          => (clone $todayAdministrations)->where('status', 'given')->count(),
+            'missed_today'         => (clone $todayAdministrations)->where('status', 'missed')->count(),
+            'refused_today'        => (clone $todayAdministrations)->where('status', 'refused')->count(),
+            'remaining_today'      => $prescriptions->sum('remaining'),
+        ];
+
+        return response()->json(['data' => $prescriptions, 'stats' => $stats, 'recent_activity' => $recentActivity]);
     }
 }

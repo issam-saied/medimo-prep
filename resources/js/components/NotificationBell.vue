@@ -5,6 +5,13 @@ import api from '../services/api'
 const notifications = ref([])
 const open = ref(false)
 const userId = ref(null)
+const container = ref(null)
+
+const handleClickOutside = (event) => {
+    if (container.value && !container.value.contains(event.target)) {
+        open.value = false
+    }
+}
 
 const fetchNotifications = async () => {
     try {
@@ -31,6 +38,7 @@ const markAllAsRead = async () => {
 }
 
 onMounted(async () => {
+    document.addEventListener('click', handleClickOutside)
     // Fetch unread notifications from DB → fill the list
     await fetchNotifications()
     // Get current user's ID
@@ -44,6 +52,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside)
     if (userId.value) {
         window.Echo.leave(`App.Models.User.${userId.value}`)
     }
@@ -51,7 +60,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="relative">
+    <div ref="container" class="relative">
         <button @click="open = !open" class="relative p-2 text-gray-600 hover:text-gray-900">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

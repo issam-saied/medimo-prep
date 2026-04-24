@@ -20,6 +20,7 @@ import UpdateAdministrationPage from "../pages/UpdateAdministrationPage.vue";
 import UpdateUserPage from "../pages/updateUserPage.vue"
 import ActivityLogsPage from "../pages/ActivityLogsPage.vue"
 import DashboardPage from "../pages/DashboardPage.vue";
+import ProfilePage from "../pages/ProfilePage.vue";
 
 
 const isAuthenticated = ref(false)
@@ -136,6 +137,12 @@ const routes = [
         path: '/dashboard',
         name: 'dashboard',
         component: DashboardPage,
+        meta: { requiresAuth: true },
+    },
+    {
+        path: '/profile',
+        name: 'profile',
+        component: ProfilePage,
         meta: { requiresAuth: true },
     },
     {

@@ -121,9 +121,9 @@ const visibleNavItems = computed(() =>
             <header class="flex items-center justify-between bg-white border-b border-gray-200 px-6 h-14 shrink-0">
                 <h1 class="text-sm font-semibold text-gray-700">Medimo</h1>
                 <div class="flex items-center gap-4">
-                    <span v-if="user" class="text-sm text-gray-500">
+                    <router-link v-if="user" to="/profile" class="text-sm text-gray-500 hover:text-gray-800">
                         {{ user.name }} · {{ user.role }}
-                    </span>
+                    </router-link>
                     <NotificationBell />
                 </div>
             </header>
