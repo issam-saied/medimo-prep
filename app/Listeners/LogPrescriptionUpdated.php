@@ -24,10 +24,12 @@ class LogPrescriptionUpdated
 
         ActivityLog::create([
             'action' => 'prescription_updated',
-            'user_id' => $prescription->created_by_user_id,
+            'user_id' => auth()->id(),
             'subject_type' => 'prescription',
             'subject_id' => $prescription->id,
-            'description' => 'Prescription updated with status ' . $prescription->status,
+            'description' => auth()->id()
+                ? 'Prescription updated with status ' . $prescription->status
+                : 'Prescription auto-expired by scheduler',
         ]);
     }
 }

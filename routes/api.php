@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AdministrationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MedicationController;
@@ -15,7 +18,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('prescriptions', PrescriptionController::class);
     Route::apiResource('administrations', AdministrationController::class);
     Route::get('/patient-options', [PatientController::class, 'options']);
+    Route::get('/medication-options', [MedicationController::class, 'options']);
     Route::get('/prescription-options', [PrescriptionController::class, 'options']);
+    Route::get('/activity-logs', [ActivityLogController::class, 'index']);
+    Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 });
 
 Route::get('/me', [AuthController::class, 'me'])->middleware('auth:sanctum');

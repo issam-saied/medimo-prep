@@ -25,10 +25,11 @@ class ListUserRequest extends FormRequest
     {
         return [
             'sort_direction' => ['nullable', 'in:asc,desc'],
-            'sort_field' => ['nullable', 'in:id,name,email,job_title,organization'],
+            'sort_field' => ['nullable', 'in:id,name,email,job_title,role,organization'],
             'name' => ['nullable', 'string', 'max:255'],
             'email' => ['nullable', 'string'],
             'job_title' => ['nullable', 'string', 'max:255'],
+            'role' => ['nullable', 'in:admin,doctor,nurse'],
             'organization' => ['nullable', 'string', 'max:255'],
         ];
     }

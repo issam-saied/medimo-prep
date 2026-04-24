@@ -42,12 +42,14 @@ const {
     }),
 })
 
-const logout = async () => {
+
+const deleteUser = async (user) => {
+    if (!confirm(`Delete user "${user.name}"? This cannot be undone.`)) return
     try {
-        await api.post('/logout')
-        router.push('/login')
-    } catch (error) {
-        console.error(error)
+        await api.delete(`/api/users/${user.id}`)
+        await loadUsers()
+    } catch {
+        alert('Failed to delete user.')
     }
 }
 
@@ -73,13 +75,7 @@ watch(
 <template>
     <div class="p-10">
 
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-xl font-bold">Users</h1>
-            <button @click="logout"
-                    class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
-                Logout
-            </button>
-        </div>
+        <h1 class="text-xl font-bold mb-6">Users</h1>
 
         <div class="flex flex-wrap gap-4 mb-6">
 
@@ -164,6 +160,16 @@ watch(
                 </th>
 
                 <th
+                    @click="toggleSortDirection('role')"
+                    class="cursor-pointer select-none border px-3 py-2 hover:text-blue-600"
+                >
+                    User role
+                    <span v-if="sortField === 'role'" class="ml-1">
+                        {{ sortDirection === 'asc' ? '↑' : '↓' }}
+                    </span>
+                </th>
+
+                <th
                     @click="toggleSortDirection('organization')"
                     class="cursor-pointer select-none border px-3 py-2 hover:text-blue-600"
                 >
@@ -180,7 +186,22 @@ watch(
                 <td class="border px-3 py-2">{{ user.name || '-' }}</td>
                 <td class="border px-3 py-2">{{ user.email || '-' }}</td>
                 <td class="border px-3 py-2">{{ user.job_title || '-' }}</td>
+                <td class="border px-3 py-2">{{ user.role || '-' }}</td>
                 <td class="border px-3 py-2">{{ user.organization || '-' }}</td>
+                <td class="border px-3 py-2 flex gap-2">
+                    <button
+                        @click="$router.push({ name: 'users.edit', params: { id: user.id } })"
+                        class="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm"
+                    >
+                        Edit
+                    </button>
+                    <button
+                        @click="deleteUser(user)"
+                        class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+                    >
+                        Delete
+                    </button>
+                </td>
             </tr>
             </tbody>
         </table>

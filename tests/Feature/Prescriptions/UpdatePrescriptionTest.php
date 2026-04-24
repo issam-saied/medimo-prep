@@ -35,7 +35,7 @@ class UpdatePrescriptionTest extends TestCase
 
         $patient = Patient::factory()->create();
         $medication = Medication::factory()->create();
-        $prescriber = User::factory()->create();
+        $prescriber = User::factory()->doctor()->create();
         $createdBy = User::factory()->create();
 
         $payload = [
@@ -45,7 +45,7 @@ class UpdatePrescriptionTest extends TestCase
             'created_by_user_id' => $createdBy->id,
             'status' => 'active',
             'dosage' => '500 mg',
-            'frequency' => '3x daily',
+            'frequency' => 3,
             'start_date' => now()->subDay()->toDateString(),
         ];
 
@@ -80,7 +80,7 @@ class UpdatePrescriptionTest extends TestCase
 
         $patient = Patient::factory()->create();
         $medication = Medication::factory()->create();
-        $prescriber = User::factory()->create();
+        $prescriber = User::factory()->doctor()->create();
 
         $payload = [
             'patient_id' => $patient->id,
@@ -88,7 +88,7 @@ class UpdatePrescriptionTest extends TestCase
             'prescriber_id' => $prescriber->id,
             'status' => 'active',
             'dosage' => '500 mg',
-            'frequency' => '3x daily',
+            'frequency' => 3,
             'start_date' => now()->subDay()->toDateString(),
         ];
 
@@ -100,7 +100,7 @@ class UpdatePrescriptionTest extends TestCase
         $updatePayload = [
             'status' => 'completed',
             'dosage' => '400 mg',
-            'frequency' => '1x daily',
+            'frequency' => 1,
             'start_date' => now()->subDay()->toDateString(),
             'end_date' => now()->toDateString(),
         ];
@@ -111,7 +111,7 @@ class UpdatePrescriptionTest extends TestCase
 
         $response->assertJsonPath('data.status', 'completed');
         $response->assertJsonPath('data.dosage', '400 mg');
-        $response->assertJsonPath('data.frequency', '1x daily');
+        $response->assertJsonPath('data.frequency', 1);
         $response->assertJsonPath('data.start_date', $updatePayload['start_date']);
         $response->assertJsonPath('data.end_date', $updatePayload['end_date']);
 
@@ -128,7 +128,7 @@ class UpdatePrescriptionTest extends TestCase
             'created_by_user_id' => auth()->id(),
             'status' => 'completed',
             'dosage' => '400 mg',
-            'frequency' => '1x daily',
+            'frequency' => 1,
             'start_date' => $updatePayload['start_date'],
             'end_date' => $updatePayload['end_date'],
         ]);
@@ -143,7 +143,7 @@ class UpdatePrescriptionTest extends TestCase
         $patient = Patient::factory()->create();
         $medication = Medication::factory()->create();
         $newMedication = Medication::factory()->create();
-        $prescriber = User::factory()->create();
+        $prescriber = User::factory()->doctor()->create();
 
         $payload = [
             'patient_id' => $patient->id,
@@ -151,7 +151,7 @@ class UpdatePrescriptionTest extends TestCase
             'prescriber_id' => $prescriber->id,
             'status' => 'active',
             'dosage' => '500 mg',
-            'frequency' => '3x daily',
+            'frequency' => 3,
             'start_date' => now()->subDay()->toDateString(),
             'end_date' => now()->addDay()->toDateString(),
         ];
@@ -166,7 +166,7 @@ class UpdatePrescriptionTest extends TestCase
             'medication_id' => $newMedication->id,
             'status' => 'completed',
             'dosage' => '400 mg',
-            'frequency' => '1x daily',
+            'frequency' => 1,
         ];
 
         $response = $this->putJson('/api/prescriptions/' . $prescriptionId, $updatePayload);
@@ -176,7 +176,7 @@ class UpdatePrescriptionTest extends TestCase
         $response->assertJsonPath('data.medication.id', $medication->id);
         $response->assertJsonPath('data.status', 'completed');
         $response->assertJsonPath('data.dosage', '400 mg');
-        $response->assertJsonPath('data.frequency', '1x daily');
+        $response->assertJsonPath('data.frequency', 1);
 
         // Verify that the prescription has been updated with the new status, dosage, and frequency
         // but the medication_id remains unchanged
@@ -185,7 +185,7 @@ class UpdatePrescriptionTest extends TestCase
             'medication_id' => $medication->id,
             'status' => 'completed',
             'dosage' => '400 mg',
-            'frequency' => '1x daily',
+            'frequency' => 1,
         ]);
 
         // Verify that the medication_id has not been updated to the new medication
@@ -204,7 +204,7 @@ class UpdatePrescriptionTest extends TestCase
         $patient = Patient::factory()->create();
         $newPatient = Patient::factory()->create();
         $medication = Medication::factory()->create();
-        $prescriber = User::factory()->create();
+        $prescriber = User::factory()->doctor()->create();
 
         $payload = [
             'patient_id' => $patient->id,
@@ -212,7 +212,7 @@ class UpdatePrescriptionTest extends TestCase
             'prescriber_id' => $prescriber->id,
             'status' => 'active',
             'dosage' => '500 mg',
-            'frequency' => '3x daily',
+            'frequency' => 3,
             'start_date' => now()->subDay()->toDateString(),
             'end_date' => now()->addDay()->toDateString(),
         ];
@@ -226,7 +226,7 @@ class UpdatePrescriptionTest extends TestCase
             'patient_id' => $newPatient->id,
             'status' => 'completed',
             'dosage' => '400 mg',
-            'frequency' => '1x daily',
+            'frequency' => 1,
         ];
 
         $response = $this->putJson('/api/prescriptions/' . $prescriptionId, $updatePayload);
@@ -236,7 +236,7 @@ class UpdatePrescriptionTest extends TestCase
         $response->assertJsonPath('data.medication.id', $medication->id);
         $response->assertJsonPath('data.status', 'completed');
         $response->assertJsonPath('data.dosage', '400 mg');
-        $response->assertJsonPath('data.frequency', '1x daily');
+        $response->assertJsonPath('data.frequency', 1);
 
         // Verify that the prescription has been updated with the new status, dosage, and frequency
         // but the patient_id remains unchanged
@@ -245,7 +245,7 @@ class UpdatePrescriptionTest extends TestCase
             'patient_id' => $patient->id,
             'status' => 'completed',
             'dosage' => '400 mg',
-            'frequency' => '1x daily',
+            'frequency' => 1,
         ]);
 
         // Verify that the patient_id has not been updated to the new patient

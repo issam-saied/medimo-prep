@@ -7,6 +7,7 @@ use App\Http\Requests\StoreMedicationRequest;
 use App\Http\Requests\UpdateMedicationRequest;
 use App\Http\Resources\MedicationResource;
 use App\Models\Medication;
+use App\Models\Patient;
 use App\Services\MedicationService;
 
 class MedicationController extends Controller
@@ -51,5 +52,25 @@ class MedicationController extends Controller
         $patient = $this->medicationService->update($id, $data);
 
         return new MedicationResource($patient);
+    }
+
+    public function destroy($id)
+    {
+        $medication = Medication::findOrFail($id);
+        $this->authorize('delete', $medication);
+        $medication->delete();
+        return response()->noContent();
+    }
+
+    public function options()
+    {
+        $medications = Medication::query()
+            ->select('*')
+            ->orderBy('name')
+            ->get();
+
+        return response()->json([
+            'data' => $medications,
+        ]);
     }
 }

@@ -28,7 +28,7 @@ class AdministrationController extends Controller
 /*    public function index(Request $request)
     {
         $query = Administration::with([
-            'user:id,name,job_title,organization',
+            'user:id,name,job_title,role,organization',
             'prescription:id,patient_id,medication_id,dosage,frequency,prescriber_id,status',
         ]);
 
@@ -62,6 +62,8 @@ class AdministrationController extends Controller
 
     public function store(StoreAdministrationRequest $request)
     {
+        $this->authorize('create', Administration::class);
+
         $data = $request->validated();
 
         $administration = $this->administrationService->create($data);
@@ -71,8 +73,19 @@ class AdministrationController extends Controller
             ->setStatusCode(201);
     }
 
+    public function destroy($id)
+    {
+        $administration = Administration::findOrFail($id);
+        $this->authorize('delete', $administration);
+        $administration->delete();
+        return response()->noContent();
+    }
+
     public function update(UpdateAdministrationRequest $request, $id)
     {
+        $administration = Administration::findOrFail($id); // find FIRST
+        $this->authorize('update', $administration);       // then authorize against the record
+
         $data = $request->validated();
 
         $administration = $this->administrationService->update($id, $data);

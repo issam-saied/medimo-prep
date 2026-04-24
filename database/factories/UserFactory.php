@@ -38,24 +38,21 @@ class UserFactory extends Factory
     public function admin(): static
     {
         return $this->state(fn (array $attributes) => [
-            'job_title' => 'Admin',
-            'organization' => 'OLVG',
+            'role' => 'admin',
         ]);
     }
 
     public function doctor(): static
     {
         return $this->state(fn (array $attributes) => [
-            'job_title' => 'Doctor',
-            'organization' => 'OLVG',
+            'role' => 'doctor',
         ]);
     }
 
     public function nurse(): static
     {
         return $this->state(fn (array $attributes) => [
-            'job_title' => 'Nurse',
-            'organization' => 'OLVG',
+            'role' => 'nurse',
         ]);
     }
 

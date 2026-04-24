@@ -8,6 +8,7 @@ const form = reactive({
     email: '',
     password: '',
     job_title: '',
+    role: '',
     organization: '',
 });
 
@@ -41,6 +42,7 @@ const submitForm = async () => {
             email: form.email,
             password: form.password,
             job_title: form.job_title,
+            role: form.role,
             organization: form.organization,
         })
         router.push('/users')
@@ -69,15 +71,6 @@ const submitForm = async () => {
     }
 }
 
-const logout = async () => {
-    try {
-        await api.post('/logout')
-        router.push('/login')
-    } catch (error) {
-        console.error(error)
-    }
-}
-
 const inputClass = (field) => {
     return [
         'w-full rounded-lg px-3 py-2 text-sm shadow-sm outline-none transition',
@@ -91,18 +84,10 @@ const inputClass = (field) => {
 
 <template>
     <div class="mx-auto max-w-3xl px-4 py-8">
-        <div class="mb-8 flex items-center justify-between">
+        <div class="mb-8">
             <h1 class="text-3xl font-bold tracking-tight text-gray-900">
                 Create User
             </h1>
-
-            <button
-                @click="logout"
-                type="button"
-                class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-            >
-                Logout
-            </button>
         </div>
 
         <div
@@ -180,6 +165,30 @@ const inputClass = (field) => {
                 </p>
             </div>
             <div>
+                <label for="role"
+                       :class="[
+                            'mb-2 block text-sm font-medium',
+                            hasError('role') ? 'text-red-600' : 'text-gray-700'
+                        ]"
+                >
+                    Role
+                </label>
+                <select
+                    v-model="form.role"
+                    id="role"
+                    @change="clearFieldError('role')"
+                    :class="inputClass('role')"
+                >
+                    <option value="" disabled>Select a role</option>
+                    <option value="admin">Admin</option>
+                    <option value="doctor">Doctor</option>
+                    <option value="nurse">Nurse</option>
+                </select>
+                <p v-if="getFieldError('role')" class="mt-1 text-sm text-red-600">
+                    {{ getFieldError('role')}}
+                </p>
+            </div>
+            <div>
                 <label for="job_title"
                        :class="[
                             'mb-2 block text-sm font-medium',
@@ -188,17 +197,13 @@ const inputClass = (field) => {
                 >
                     Job title
                 </label>
-                <select
+                <input
                     v-model="form.job_title"
+                    type="text"
                     id="job_title"
-                    @change="clearFieldError('job_title')"
+                    @input="clearFieldError('job_title')"
                     :class="inputClass('job_title')"
                 >
-                    <option value="" disabled>Select a job title</option>
-                    <option value="admin">Admin</option>
-                    <option value="doctor">Doctor</option>
-                    <option value="nurse">Nurse</option>
-                </select>
                 <p v-if="getFieldError('job_title')" class="mt-1 text-sm text-red-600">
                     {{ getFieldError('job_title')}}
                 </p>

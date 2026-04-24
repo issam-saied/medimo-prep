@@ -27,6 +27,7 @@ class StoreUserRequest extends FormRequest
             'email' => 'required|string',
             'password' => 'required|string',
             'job_title' => 'nullable|string',
+            'role' => ['required', 'in:admin,doctor,nurse'],
             'organization' => 'nullable|string',
         ];
 

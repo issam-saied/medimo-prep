@@ -26,7 +26,7 @@ class PrescriptionFactory extends Factory
             'prescriber_id' => \App\Models\User::factory(),
             'created_by_user_id' => \App\Models\User::factory(),
             'dosage' => fake()->randomElement(['500 mg', '250 mg']),
-            'frequency' => fake()->randomElement(['1x daily', '3x daily']),
+            'frequency' => fake()->numberBetween(1, 4),
             'status' => 'active',
             'start_date' => $start,
             'end_date' => $end,

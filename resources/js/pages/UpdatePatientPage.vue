@@ -60,15 +60,6 @@ const submitForm = async () => {
     }
 }
 
-const logout = async () => {
-    try {
-        await api.post('/logout')
-        router.push('/login')
-    } catch (error) {
-        console.error(error)
-    }
-}
-
 onMounted(async () => {
     try {
         const response = await api.get(`/api/patients/${route.params.id}`)
@@ -85,17 +76,10 @@ onMounted(async () => {
 
 <template>
     <div class="mx-auto max-w-3xl px-4 py-8">
-        <div class="mb-8 flex items-center justify-between">
+        <div class="mb-8">
             <h1 class="text-3xl font-bold tracking-tight text-gray-900">
                 Edit Patient
             </h1>
-            <button
-                @click="logout"
-                type="button"
-                class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-            >
-                Logout
-            </button>
         </div>
 
         <div

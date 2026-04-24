@@ -27,6 +27,7 @@ class UpdateUserRequest extends FormRequest
             'email' => 'sometimes|string',
             'password' => 'sometimes|string',
             'job_title' => 'nullable|string',
+            'role' => ['required', 'in:admin,doctor,nurse'],
             'organization' => 'nullable|string',
         ];
     }

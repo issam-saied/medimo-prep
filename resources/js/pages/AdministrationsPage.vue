@@ -41,12 +41,14 @@ const {
     }),
 })
 
-const logout = async () => {
+const deleteAdministration = async (administration) => {
+    const label = administration.prescription?.patient?.name ?? `#${administration.id}`
+    if (!confirm(`Delete administration for "${label}"? This cannot be undone.`)) return
     try {
-        await api.post('/logout')
-        router.push('/login')
-    } catch (error) {
-        console.error(error)
+        await api.delete(`/api/administrations/${administration.id}`)
+        await loadAdministrations()
+    } catch {
+        alert('Failed to delete administration.')
     }
 }
 
@@ -77,13 +79,7 @@ watch(
 <template>
     <div class="p-10">
 
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-xl font-bold">Administrations</h1>
-            <button @click="logout"
-                    class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
-                Logout
-            </button>
-        </div>
+        <h1 class="text-xl font-bold mb-6">Administrations</h1>
 
         <div class="flex flex-wrap gap-4 mb-6">
             <select name="status"
@@ -193,6 +189,20 @@ watch(
                 <td class="border px-3 py-2">{{ administration.status }}</td>
                 <td class="border px-3 py-2 max-w-xs truncate" :title="administration.note">{{ administration.note }}</td>
                 <td class="border px-3 py-2">{{ administration.administered_at?.slice(0, 10) }}</td>
+                <td class="border px-3 py-2 flex gap-2">
+                    <button
+                        @click="$router.push({ name: 'administrations.edit', params: { id: administration.id } })"
+                        class="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm"
+                    >
+                        Edit
+                    </button>
+                    <button
+                        @click="deleteAdministration(administration)"
+                        class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+                    >
+                        Delete
+                    </button>
+                </td>
             </tr>
             </tbody>
         </table>

@@ -11,7 +11,7 @@ class UserService
     {
         $query = User::query();
 
-        $allowedColumns = ['id','name','email','job_title','organization'];
+        $allowedColumns = ['id','name','email','job_title','role','organization'];
         foreach ($filters as $key => $searchValue) {
             if (!empty($searchValue) && in_array($key, $allowedColumns, true)) {
                 $query->where($key, 'like', '%' . $searchValue . '%');
@@ -34,6 +34,10 @@ class UserService
     public function update(int $id, array $data): User
     {
         $user = User::findOrFail($id);
+
+        if (empty($data['password'])) {
+            unset($data['password']);
+        }
 
         $user->update($data);
 

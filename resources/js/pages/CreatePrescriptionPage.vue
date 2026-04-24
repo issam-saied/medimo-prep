@@ -70,15 +70,6 @@ const submitForm = async () => {
     }
 }
 
-const logout = async () => {
-    try {
-        await api.post('/logout')
-        router.push('/login')
-    } catch (error) {
-        console.error(error)
-    }
-}
-
 const inputClass = (field) => {
     return [
         'w-full rounded-lg px-3 py-2 text-sm shadow-sm outline-none transition',
@@ -94,8 +85,8 @@ onMounted(async () => {
     try {
         const [patientsRes, medicationsRes, prescribersRes] = await Promise.all([
             api.get('/api/patient-options'),
-            api.get('/api/medications'),
-            api.get('/api/users?job_title=nurse'),
+            api.get('/api/medication-options'),
+            api.get('/api/users?role=doctor'),
         ])
 
         patients.value = patientsRes.data.data
@@ -121,19 +112,9 @@ watch(() => form.status, (newStatus) => {
 
 <template>
     <div class="mx-auto max-w-3xl px-4 py-8">
-        <div class="mb-8 flex items-center justify-between">
-            <h1 class="text-3xl font-bold tracking-tight text-gray-900">
-                Create Prescription
-            </h1>
-
-            <button
-                @click="logout"
-                type="button"
-                class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-            >
-                Logout
-            </button>
-        </div>
+        <h1 class="text-3xl font-bold tracking-tight text-gray-900 mb-8">
+            Create Prescription
+        </h1>
 
         <div
             v-if="errorMessage"
@@ -194,7 +175,7 @@ watch(() => form.status, (newStatus) => {
                 >
                     <option value="" disabled>Select a medication</option>
                     <option v-for="medication in medications" :key="medication.id" :value="medication.id">
-                        {{ medication.name }} - {{ medication.strength }}
+                        {{ medication.name }} - {{ medication.strength }} {{ medication.unit }}
                     </option>
                 </select>
                 <p v-if="getFieldError('medication_id')" class="mt-1 text-sm text-red-600">
@@ -257,11 +238,13 @@ watch(() => form.status, (newStatus) => {
                             hasError('frequency') ? 'text-red-600' : 'text-gray-700'
                         ]"
                 >
-                Frequency
+                Frequency x day
                 </label>
                 <input
                     v-model="form.frequency"
-                    type="text"
+                    type="number"
+                    min="1"
+                    max="24"
                     id="frequency"
                     @input="clearFieldError('frequency')"
                     :class="inputClass('frequency')"

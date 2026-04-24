@@ -34,7 +34,7 @@ class ListAdministrationTest extends TestCase
         $prescription = Prescription::factory()->create([
             'status' => 'active',
             'dosage' => '500 mg',
-            'frequency' => '1x daily',
+            'frequency' => 1,
         ]);
 
         Administration::factory()->create([
@@ -81,14 +81,14 @@ class ListAdministrationTest extends TestCase
             'patient_id' => $patient1->id,
             'status' => 'active',
             'dosage' => '400 mg',
-            'frequency' => '3x daily',
+            'frequency' => 3,
         ]);
 
         $prescription2 = Prescription::factory()->create([
             'patient_id' => $patient2->id,
             'status' => 'stopped',
             'dosage' => '500 mg',
-            'frequency' => '1x daily',
+            'frequency' => 1,
         ]);
 
         Administration::factory()->create([
@@ -107,7 +107,7 @@ class ListAdministrationTest extends TestCase
             'note' => 'Patient refused medication',
         ]);
 
-        $response = $this->getJson('/api/administrations?patient_id=' . $patient1->id);
+        $response = $this->getJson('/api/administrations?patient_name=' . urlencode($patient1->name));
 
         $response->assertOk();
         $response->assertJsonCount(1, 'data');

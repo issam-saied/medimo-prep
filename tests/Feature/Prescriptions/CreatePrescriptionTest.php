@@ -36,7 +36,7 @@ class CreatePrescriptionTest extends TestCase
 
         $patient = Patient::factory()->create();
         $medication = Medication::factory()->create();
-        $prescriber = User::factory()->create();
+        $prescriber = User::factory()->doctor()->create();
 
         $payload = [
             'patient_id' => $patient->id,
@@ -44,7 +44,7 @@ class CreatePrescriptionTest extends TestCase
             'prescriber_id' => $prescriber->id,
             'status' => 'active',
             'dosage' => '500 mg',
-            'frequency' => '3x daily',
+            'frequency' => 3,
             'start_date' => now()->subDay()->toDateString(),
             'end_date' => now()->addDay()->toDateString(),
         ];
@@ -100,7 +100,7 @@ class CreatePrescriptionTest extends TestCase
         $response->assertJsonPath('data.createdByUser.name',  auth()->user()->name);
 
         $response->assertJsonPath('data.dosage', '500 mg');
-        $response->assertJsonPath('data.frequency', '3x daily');
+        $response->assertJsonPath('data.frequency', 3);
         $response->assertJsonPath('data.status', 'active');
 
         $this->assertDatabaseHas('prescriptions', [
@@ -110,7 +110,7 @@ class CreatePrescriptionTest extends TestCase
             'created_by_user_id' => auth()->id(),
             'status' => 'active',
             'dosage' => '500 mg',
-            'frequency' => '3x daily',
+            'frequency' => 3,
             'start_date' => $payload['start_date'],
             'end_date' => $payload['end_date'],
         ]);
@@ -124,7 +124,7 @@ class CreatePrescriptionTest extends TestCase
 
         $patient = Patient::factory()->create();
         $medication = Medication::factory()->create();
-        $prescriber = User::factory()->create();
+        $prescriber = User::factory()->doctor()->create();
 
         $prescription = Prescription::factory()->create([
             'patient_id' => $patient->id,
@@ -141,7 +141,7 @@ class CreatePrescriptionTest extends TestCase
             'prescriber_id' => $prescriber->id,
             'status' => 'active',
             'dosage' => '300 mg',
-            'frequency' => '1x daily',
+            'frequency' => 1,
             'start_date' => now()->subDay()->toDateString(),
             'end_date' => now()->addDay()->toDateString(),
         ];

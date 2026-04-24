@@ -5,6 +5,9 @@ namespace App\Services;
 use App\Events\PrescriptionCreated;
 use App\Events\PrescriptionUpdated;
 use App\Models\Prescription;
+use App\Models\User;
+use App\Notifications\NewPrescriptionNotification;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -15,8 +18,8 @@ class PrescriptionService
         $query = Prescription::with([
             'patient:id,name,birthdate',
             'medication:id,name,strength,unit',
-            'prescriber:id,name,job_title,organization',
-            'createdByUser:id,name,job_title,organization',
+            'prescriber:id,name,job_title,role,organization',
+            'createdByUser:id,name,job_title,role,organization',
         ]);
 
         if (!empty($filters['status'] ?? null)) {
@@ -105,9 +108,15 @@ class PrescriptionService
         // Set the created_by_user_id to the currently authenticated user's ID
         $data['created_by_user_id'] = auth()->id();
 
-        $prescription = Prescription::create($data);
+        $prescription = Prescription::with(['patient', 'medication'])->find(
+            Prescription::create($data)->id
+        );
 
         event(new PrescriptionCreated($prescription));
+
+        $nurses = User::where('role', 'nurse')->get();
+        Notification::send($nurses, new NewPrescriptionNotification($prescription));
+
         return $prescription;
     }
 

@@ -4,19 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     protected $fillable = [
         'name',
         'email',
         'password',
         'job_title',
+        'role',
         'organization',
     ];
 
@@ -38,11 +40,16 @@ class User extends Authenticatable
         ];
     }
 
-    public function hasJobTitle(string ...$titles): bool
+    public function hasRole(string ...$titles): bool
     {
-        $jobTitle = strtolower($this->job_title ?? '');
+        $role = strtolower($this->role ?? '');
 
-        return in_array($jobTitle, array_map('strtolower', $titles), true);
+        return in_array($role, array_map('strtolower', $titles), true);
+    }
+
+    public function activityLogs(): HasMany
+    {
+        return $this->hasMany(ActivityLog::class);
     }
 
     public function administrations(): HasMany

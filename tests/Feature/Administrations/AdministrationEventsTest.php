@@ -41,7 +41,7 @@ class AdministrationEventsTest extends TestCase
 
         $patient = Patient::factory()->create();
         $medication = Medication::factory()->create();
-        $prescriber = User::factory()->create();
+        $prescriber = User::factory()->doctor()->create();
         $createdBy = User::factory()->create();
         $administrationUser = User::factory()->create();
 

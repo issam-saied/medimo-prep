@@ -54,6 +54,14 @@ class PatientController extends Controller
         return new PatientResource($patient);
     }
 
+    public function destroy($id)
+    {
+        $patient = Patient::findOrFail($id);
+        $this->authorize('delete', $patient);
+        $patient->delete();
+        return response()->noContent();
+    }
+
     public function options()
     {
         $patients = Patient::query()

@@ -39,7 +39,6 @@ class CreateAdministrationTest extends TestCase
         $medication = Medication::factory()->create();
         $prescriber = User::factory()->create();
         $createdBy = User::factory()->create();
-        $administrationUser = User::factory()->create();
 
         $prescription = Prescription::factory()->create([
             'patient_id' => $patient->id,
@@ -53,7 +52,6 @@ class CreateAdministrationTest extends TestCase
 
         $payload = [
             'prescription_id' => $prescription->id,
-            'user_id' => $administrationUser->id,
             'status' => 'given',
             'administered_at' => now()->toDateTimeString(),
             'note' => null,
@@ -63,8 +61,8 @@ class CreateAdministrationTest extends TestCase
 
         $response->assertCreated();
 
-        $response->assertJsonPath('data.user.id', $administrationUser->id);
-        $response->assertJsonPath('data.user.name', $administrationUser->name);
+        $response->assertJsonPath('data.user.id', $user->id);
+        $response->assertJsonPath('data.user.name', $user->name);
 
         $response->assertJsonPath('data.prescription.id', $prescription->id);
         $response->assertJsonPath('data.prescription.dosage', $prescription->dosage);
@@ -75,7 +73,7 @@ class CreateAdministrationTest extends TestCase
 
         $this->assertDatabaseHas('administrations', [
             'prescription_id' => $prescription->id,
-            'user_id' => $administrationUser->id,
+            'user_id' => $user->id,
             'status' => 'given',
         ]);
     }

@@ -1,6 +1,6 @@
 <script setup>
-import {computed, onMounted, reactive, ref, watch} from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import api from '../services/api'
 
 const form = reactive({
@@ -12,7 +12,9 @@ const form = reactive({
 })
 
 const router = useRouter()
+const route = useRoute()
 const errorMessage = ref('')
+const fromDashboard = computed(() => !!route.query.prescription_id)
 const submitting = ref(false)
 const loadingFormData = ref(true)
 
@@ -72,15 +74,6 @@ const submitForm = async () => {
     }
 }
 
-const logout = async () => {
-    try {
-        await api.post('/logout')
-        router.push('/login')
-    } catch (error) {
-        console.error(error)
-    }
-}
-
 const inputClass = (field) => {
     return [
         'w-full rounded-lg px-3 py-2 text-sm shadow-sm outline-none transition',
@@ -105,10 +98,20 @@ onMounted(async () => {
     loadingFormData.value = true
 
     try {
-        const patientsRes = await api.get('/api/patient-options')
-        patients.value = patientsRes.data.data
+        const preselectedId = route.query.prescription_id
+        if (preselectedId) {
+            const prescriptionRes = await api.get(`/api/prescriptions/${preselectedId}`)
+            const prescription = prescriptionRes.data.data
+            form.patient_id = Number(prescription.patient.id)
+            patients.value = [prescription.patient]
+            prescriptions.value = [prescription]
+            form.prescription_id = Number(preselectedId)
+        } else {
+            const patientsRes = await api.get('/api/patient-options')
+            patients.value = patientsRes.data.data
+        }
     } catch (error) {
-        console.error('Error fetching patient options:', error)
+        console.error('Error fetching form data:', error)
         errorMessage.value = 'Failed to load form data.'
     } finally {
         loadingFormData.value = false
@@ -116,6 +119,8 @@ onMounted(async () => {
 })
 
 watch(() => form.patient_id, async (newPatientId) => {
+    if (fromDashboard.value) return
+
     form.prescription_id = ''
     prescriptions.value = []
 
@@ -150,18 +155,10 @@ watch(() => form.status, (newStatus) => {
 
 <template>
     <div class="mx-auto max-w-3xl px-4 py-8">
-        <div class="mb-8 flex items-center justify-between">
+        <div class="mb-8">
             <h1 class="text-3xl font-bold tracking-tight text-gray-900">
                 Create Administration
             </h1>
-
-            <button
-                @click="logout"
-                type="button"
-                class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-            >
-                Logout
-            </button>
         </div>
 
         <div
@@ -198,7 +195,8 @@ watch(() => form.status, (newStatus) => {
                     v-model="form.patient_id"
                     id="patient_id"
                     @change="clearFieldError('patient_id')"
-                    :class="inputClass('patient_id')"
+                    :disabled="fromDashboard"
+                    :class="[...inputClass('patient_id'), fromDashboard ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : '']"
                 >
                     <option value="" disabled>Select a patient</option>
                     <option v-for="patient in patients" :key="patient.id" :value="patient.id">
@@ -224,10 +222,10 @@ watch(() => form.status, (newStatus) => {
                     v-model="form.prescription_id"
                     id="prescription_id"
                     @change="clearFieldError('prescription_id')"
-                    :disabled="!form.patient_id"
+                    :disabled="fromDashboard || !form.patient_id"
                     :class="[
                         ...inputClass('prescription_id'),
-                        !form.patient_id ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
+                        (fromDashboard || !form.patient_id) ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
                     ]"
                 >
                     <option value="" disabled>

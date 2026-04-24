@@ -45,7 +45,7 @@ class PrescriptionResource extends JsonResource
             ],
 
             'dosage' => $this->dosage,
-            'frequency' => $this->frequency,
+            'frequency' => (int) $this->frequency,
             'status' => $this->status,
             'start_date' => $this->start_date,
             'end_date' => $this->end_date,

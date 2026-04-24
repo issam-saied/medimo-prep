@@ -16,7 +16,7 @@ class PrescriptionAuthorizationTest extends TestCase
     {
         $patient = Patient::factory()->create();
         $medication = Medication::factory()->create();
-        $prescriber = User::factory()->create();
+        $prescriber = User::factory()->doctor()->create();
         $doctor = User::factory()->doctor()->create();
 
         $payload = [
@@ -25,7 +25,7 @@ class PrescriptionAuthorizationTest extends TestCase
             'prescriber_id' => $prescriber->id,
             'status' => 'active',
             'dosage' => '500 mg',
-            'frequency' => '3x daily',
+            'frequency' => 3,
             'start_date' => now()->subDay()->toDateString(),
             'end_date' => now()->addDay()->toDateString(),
         ];
@@ -45,7 +45,7 @@ class PrescriptionAuthorizationTest extends TestCase
             'created_by_user_id' => $doctor->id,
             'status' => 'active',
             'dosage' => '500 mg',
-            'frequency' => '3x daily',
+            'frequency' => 3,
             'start_date' => $payload['start_date'],
             'end_date' => $payload['end_date'],
         ]);
@@ -55,7 +55,7 @@ class PrescriptionAuthorizationTest extends TestCase
     {
         $patient = Patient::factory()->create();
         $medication = Medication::factory()->create();
-        $prescriber = User::factory()->create();
+        $prescriber = User::factory()->doctor()->create();
         $nurse = User::factory()->nurse()->create();
 
         $payload = [
@@ -64,20 +64,20 @@ class PrescriptionAuthorizationTest extends TestCase
             'prescriber_id' => $prescriber->id,
             'status' => 'active',
             'dosage' => '500 mg',
-            'frequency' => '3x daily',
+            'frequency' => 3,
             'start_date' => now()->subDay()->toDateString(),
             'end_date' => now()->addDay()->toDateString(),
         ];
 
         $response = $this->actingAs($nurse)->postJson('/api/prescriptions', $payload);
 
-        $response->assertForbidden();
+        $response->assertCreated();
 
-        $this->assertDatabaseMissing('prescriptions', [
+        $this->assertDatabaseHas('prescriptions', [
             'patient_id' => $patient->id,
             'medication_id' => $medication->id,
             'dosage' => '500 mg',
-            'frequency' => '3x daily',
+            'frequency' => 3,
         ]);
     }
 
@@ -85,7 +85,7 @@ class PrescriptionAuthorizationTest extends TestCase
     {
         $patient = Patient::factory()->create();
         $medication = Medication::factory()->create();
-        $prescriber = User::factory()->create();
+        $prescriber = User::factory()->doctor()->create();
 
         $payload = [
             'patient_id' => $patient->id,
@@ -93,7 +93,7 @@ class PrescriptionAuthorizationTest extends TestCase
             'prescriber_id' => $prescriber->id,
             'status' => 'active',
             'dosage' => '500 mg',
-            'frequency' => '3x daily',
+            'frequency' => 3,
             'start_date' => now()->subDay()->toDateString(),
             'end_date' => now()->addDay()->toDateString(),
         ];
@@ -106,7 +106,7 @@ class PrescriptionAuthorizationTest extends TestCase
             'patient_id' => $patient->id,
             'medication_id' => $medication->id,
             'dosage' => '500 mg',
-            'frequency' => '3x daily',
+            'frequency' => 3,
         ]);
     }
 }

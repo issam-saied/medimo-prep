@@ -38,12 +38,13 @@ const {
     }),
 })
 
-const logout = async () => {
+const deleteMedication = async (medication) => {
+    if (!confirm(`Delete medication "${medication.name}"? This cannot be undone.`)) return
     try {
-        await api.post('/logout')
-        router.push('/login')
-    } catch (error) {
-        console.error(error)
+        await api.delete(`/api/medications/${medication.id}`)
+        await loadMedications()
+    } catch {
+        alert('Failed to delete medication.')
     }
 }
 
@@ -69,13 +70,7 @@ watch(
 <template>
     <div class="p-10">
 
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-xl font-bold">Medications</h1>
-            <button @click="logout"
-                    class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
-                Logout
-            </button>
-        </div>
+        <h1 class="text-xl font-bold mb-6">Medications</h1>
 
         <div class="flex flex-wrap gap-4 mb-6">
 
@@ -148,6 +143,20 @@ watch(
                 <td class="border px-3 py-2">{{ medication.form || '-' }}</td>
                 <td class="border px-3 py-2">{{ medication.strength || '-' }}</td>
                 <td class="border px-3 py-2">{{ medication.unit || '-' }}</td>
+                <td class="border px-3 py-2 flex gap-2">
+                    <button
+                        @click="$router.push({ name: 'medications.edit', params: { id: medication.id } })"
+                        class="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm"
+                    >
+                        Edit
+                    </button>
+                    <button
+                        @click="deleteMedication(medication)"
+                        class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+                    >
+                        Delete
+                    </button>
+                </td>
             </tr>
             </tbody>
         </table>

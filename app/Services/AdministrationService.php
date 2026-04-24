@@ -5,9 +5,13 @@ namespace App\Services;
 use App\Events\AdministrationUpdated;
 use App\Models\Administration;
 use App\Models\Prescription;
+use App\Models\User;
+use App\Notifications\MissedOrRefusedDoseNotification;
+use App\Notifications\NewPrescriptionNotification;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 use App\Events\AdministrationCreated;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -17,7 +21,7 @@ class AdministrationService
     public function getFilteredAdministrations(array $filters): LengthAwarePaginator
     {
         $query = Administration::with([
-            'user:id,name,job_title,organization',
+            'user:id,name,job_title,role,organization',
             'prescription:id,patient_id,medication_id,prescriber_id,dosage,frequency,status',
             'prescription.patient:id,name',
             'prescription.medication:id,name',
@@ -126,9 +130,21 @@ class AdministrationService
 
             $data['user_id'] = auth()->id();
 
-            $administration = Administration::create($data);
+            $administration = Administration::with(['prescription.patient', 'prescription.medication'])->find(
+                Administration::create($data)->id
+            );
 
             event(new AdministrationCreated($administration));
+
+            //Dose missed/refused → notify prescribing doctor + all admins
+            if (in_array($data['status'], ['refused','missed']) ) {
+
+                $recipients = User::where('id', $administration->prescription->prescriber_id)
+                    ->orWhere('role', 'admin')
+                    ->get();
+
+                Notification::send($recipients, new MissedOrRefusedDoseNotification($administration));
+            }
 
             return $administration;
         });

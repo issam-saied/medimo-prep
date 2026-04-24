@@ -32,13 +32,13 @@ class ListPrescriptionTest extends TestCase
         $activePrescription = Prescription::factory()->create([
             'status' => 'active',
             'dosage' => '500 mg',
-            'frequency' => '1x daily',
+            'frequency' => 1,
         ]);
 
         $completedPrescription = Prescription::factory()->create([
             'status' => 'completed',
             'dosage' => '999 mg',
-            'frequency' => '9x daily',
+            'frequency' => 9,
         ]);
 
         // Act

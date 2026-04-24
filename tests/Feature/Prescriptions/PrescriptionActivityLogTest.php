@@ -35,7 +35,7 @@ class PrescriptionActivityLogTest extends TestCase
 
         $patient = Patient::factory()->create();
         $medication = Medication::factory()->create();
-        $prescriber = User::factory()->create();
+        $prescriber = User::factory()->doctor()->create();
 
         $payload = [
             'patient_id' => $patient->id,
@@ -43,7 +43,7 @@ class PrescriptionActivityLogTest extends TestCase
             'prescriber_id' => $prescriber->id,
             'status' => 'active',
             'dosage' => '500 mg',
-            'frequency' => '3x daily',
+            'frequency' => 3,
             'start_date' => now()->subDay()->toDateString(),
             'end_date' => now()->addDay()->toDateString(),
         ];
@@ -67,7 +67,7 @@ class PrescriptionActivityLogTest extends TestCase
 
         $patient = Patient::factory()->create();
         $medication = Medication::factory()->create();
-        $prescriber = User::factory()->create();
+        $prescriber = User::factory()->doctor()->create();
 
         $payload = [
             'patient_id' => $patient->id,
@@ -75,7 +75,7 @@ class PrescriptionActivityLogTest extends TestCase
             'prescriber_id' => $prescriber->id,
             'status' => 'active',
             'dosage' => '500 mg',
-            'frequency' => '3x daily',
+            'frequency' => 3,
             'start_date' => now()->subDay()->toDateString(),
         ];
 
@@ -87,7 +87,7 @@ class PrescriptionActivityLogTest extends TestCase
         $updatePayload = [
             'status' => 'completed',
             'dosage' => '400 mg',
-            'frequency' => '1x daily',
+            'frequency' => 1,
             'start_date' => now()->subDay()->toDateString(),
             'end_date' => now()->toDateString(),
         ];

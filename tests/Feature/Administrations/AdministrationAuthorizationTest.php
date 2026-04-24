@@ -17,9 +17,8 @@ class AdministrationAuthorizationTest extends TestCase
     {
         $patient = Patient::factory()->create();
         $medication = Medication::factory()->create();
-        $prescriber = User::factory()->create();
+        $prescriber = User::factory()->doctor()->create();
         $createdBy = User::factory()->create();
-        $adminUser = User::factory()->create();
         $nurse = User::factory()->nurse()->create();
 
         $prescription = Prescription::factory()->create([
@@ -34,7 +33,6 @@ class AdministrationAuthorizationTest extends TestCase
 
         $payload = [
             'prescription_id' => $prescription->id,
-            'user_id' => $adminUser->id,
             'status' => 'given',
             'administered_at' => now()->toDateTimeString(),
             'note' => null,
@@ -44,8 +42,8 @@ class AdministrationAuthorizationTest extends TestCase
 
         $response->assertCreated();
 
-        $response->assertJsonPath('data.user.id', $adminUser->id);
-        $response->assertJsonPath('data.user.name', $adminUser->name);
+        $response->assertJsonPath('data.user.id', $nurse->id);
+        $response->assertJsonPath('data.user.name', $nurse->name);
 
         $response->assertJsonPath('data.prescription.id', $prescription->id);
         $response->assertJsonPath('data.prescription.dosage', $prescription->dosage);
@@ -56,7 +54,7 @@ class AdministrationAuthorizationTest extends TestCase
 
         $this->assertDatabaseHas('administrations', [
             'prescription_id' => $prescription->id,
-            'user_id' => $adminUser->id,
+            'user_id' => $nurse->id,
             'status' => 'given',
         ]);
     }
@@ -65,9 +63,8 @@ class AdministrationAuthorizationTest extends TestCase
     {
         $patient = Patient::factory()->create();
         $medication = Medication::factory()->create();
-        $prescriber = User::factory()->create();
+        $prescriber = User::factory()->doctor()->create();
         $createdBy = User::factory()->create();
-        $administrationUser = User::factory()->create();
         $doctor = User::factory()->doctor()->create();
 
         $prescription = Prescription::factory()->create([
@@ -82,7 +79,6 @@ class AdministrationAuthorizationTest extends TestCase
 
         $payload = [
             'prescription_id' => $prescription->id,
-            'user_id' => $administrationUser->id,
             'status' => 'given',
             'administered_at' => now()->toDateTimeString(),
             'note' => null,
@@ -94,7 +90,7 @@ class AdministrationAuthorizationTest extends TestCase
 
         $this->assertDatabaseMissing('administrations', [
             'prescription_id' => $prescription->id,
-            'user_id' => $administrationUser->id,
+            'user_id' => $doctor->id,
             'status' => 'given',
         ]);
     }

@@ -13,6 +13,12 @@ import CreateMedicationPage from "../pages/CreateMedicationPage.vue";
 import UsersPage from "../pages/UsersPage.vue";
 import CreateUserPage from "../pages/CreateUserPage.vue";
 import UpdatePatientPage from "../pages/UpdatePatientPage.vue";
+import UpdatePrescriptionPage from "../pages/UpdatePrescriptionPage.vue";
+import UpdateMedicationPage from "../pages/UpdateMedicationPage.vue";
+import UpdateAdministrationPage from "../pages/UpdateAdministrationPage.vue";
+import UpdateUserPage from "../pages/updateUserPage.vue"
+import ActivityLogsPage from "../pages/ActivityLogsPage.vue"
+import DashboardPage from "../pages/DashboardPage.vue";
 
 
 const isAuthenticated = ref(false)
@@ -30,30 +36,6 @@ const routes = [
         meta: { requiresAuth: true },
     },
     {
-        path: '/users',
-        name: 'user',
-        component: UsersPage,
-        meta: { requiresAuth: true },
-    },
-    {
-        path: '/medications',
-        name: 'medications',
-        component: MedicationsPage,
-        meta: { requiresAuth: true },
-    },
-    {
-        path: '/prescriptions',
-        name: 'prescriptions',
-        component: PrescriptionsPage,
-        meta: { requiresAuth: true },
-    },
-    {
-        path: '/administrations',
-        name: 'administrations',
-        component: AdministrationsPage,
-        meta: { requiresAuth: true },
-    },
-    {
         path: '/patients/create',
         name: 'patients.create',
         component: CreatePatientPage,
@@ -66,9 +48,9 @@ const routes = [
         meta: { requiresAuth: true },
     },
     {
-        path: '/users/create',
-        name: 'users.create',
-        component: CreateUserPage,
+        path: '/medications',
+        name: 'medications',
+        component: MedicationsPage,
         meta: { requiresAuth: true },
     },
     {
@@ -78,9 +60,33 @@ const routes = [
         meta: { requiresAuth: true },
     },
     {
+        path: '/medications/:id/edit',
+        name: 'medications.edit',
+        component: UpdateMedicationPage,
+        meta: { requiresAuth: true },
+    },
+    {
+        path: '/prescriptions',
+        name: 'prescriptions',
+        component: PrescriptionsPage,
+        meta: { requiresAuth: true },
+    },
+    {
         path: '/prescriptions/create',
         name: 'prescriptions.create',
         component: CreatePrescriptionPage,
+        meta: { requiresAuth: true },
+    },
+    {
+        path: '/prescriptions/:id/edit',
+        name: 'prescriptions.edit',
+        component: UpdatePrescriptionPage,
+        meta: { requiresAuth: true },
+    },
+    {
+        path: '/administrations',
+        name: 'administrations',
+        component: AdministrationsPage,
         meta: { requiresAuth: true },
     },
     {
@@ -90,8 +96,44 @@ const routes = [
         meta: { requiresAuth: true },
     },
     {
+        path: '/administrations/:id/edit',
+        name: 'administrations.edit',
+        component: UpdateAdministrationPage,
+        meta: { requiresAuth: true },
+    },
+    {
+        path: '/users',
+        name: 'user',
+        component: UsersPage,
+        meta: { requiresAuth: true },
+    },
+    {
+        path: '/users/create',
+        name: 'users.create',
+        component: CreateUserPage,
+        meta: { requiresAuth: true },
+    },
+    {
+        path: '/users/:id/edit',
+        name: 'users.edit',
+        component: UpdateUserPage,
+        meta: { requiresAuth: true },
+    },
+    {
+        path: '/activity-logs',
+        name: 'activity-logs',
+        component: ActivityLogsPage,
+        meta: { requiresAuth: true },
+    },
+    {
+        path: '/dashboard',
+        name: 'dashboard',
+        component: DashboardPage,
+        meta: { requiresAuth: true },
+    },
+    {
         path: '/',
-        redirect: '/prescriptions',
+        redirect: '/dashboard',
     },
 ]
 

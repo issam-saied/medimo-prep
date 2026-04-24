@@ -36,6 +36,8 @@ class PrescriptionController extends Controller
 
     public function store(StorePrescriptionRequest $request)
     {
+        $this->authorize('create', Prescription::class); // no record yet, pass the class
+
         $data = $request->validated();
 
         $prescription = $this->prescriptionService->create($data);
@@ -47,11 +49,22 @@ class PrescriptionController extends Controller
 
     public function update(UpdatePrescriptionRequest $request, $id)
     {
+        $prescription = Prescription::findOrFail($id); // find FIRST
+        $this->authorize('update', $prescription);     // then authorize against the record
+
         $data = $request->validated();
 
         $prescription = $this->prescriptionService->update($id, $data);
 
         return new PrescriptionResource($prescription);
+    }
+
+    public function destroy($id)
+    {
+        $prescription = Prescription::findOrFail($id);
+        $this->authorize('delete', $prescription);
+        $prescription->delete();
+        return response()->noContent();
     }
 
     public function options(Request $request)

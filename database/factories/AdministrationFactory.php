@@ -17,12 +17,14 @@ class AdministrationFactory extends Factory
      */
     public function definition(): array
     {
+        $status = fake()->randomElement(['given', 'missed', 'refused']);
+
         return [
             'prescription_id' => \App\Models\Prescription::factory(),
             'user_id' => \App\Models\User::factory(),
-            'status' => fake()->randomElement(['given', 'missed', 'refused']),
+            'status' => $status,
             'administered_at' => fake()->dateTimeBetween('-2 days', 'now'),
-            'note' => fake()->optional()->sentence(),
+            'note' => in_array($status, ['missed', 'refused']) ? fake()->sentence() : fake()->optional()->sentence(),
         ];
     }
 }

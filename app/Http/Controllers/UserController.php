@@ -7,7 +7,6 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Services\UserService;
 use App\Http\Requests\StoreUserRequest;
-
 use App\Models\User;
 
 class UserController extends Controller
@@ -37,6 +36,8 @@ class UserController extends Controller
 
     public function store(StoreUserRequest $request)
     {
+        $this->authorize('create', User::class);
+
         $data = $request->validated();
 
         $user = $this->userService->create($data);
@@ -46,8 +47,21 @@ class UserController extends Controller
             ->setStatusCode(201);
     }
 
+    public function destroy($id)
+    {
+        $user = User::findOrFail($id);
+        $this->authorize('delete', $user);
+        $user->delete();
+        return response()->noContent();
+    }
+
     public function update(UpdateUserRequest $request, $id)
     {
+        // If you later add ownership rules (e.g. "a user can edit their own profile"),
+        // the model is already there — no refactoring needed
+        $user = User::findOrFail($id);
+        $this->authorize('update', $user);
+
         $data = $request->validated();
 
         $user = $this->userService->update($id, $data);

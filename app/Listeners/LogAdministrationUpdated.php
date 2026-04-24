@@ -23,7 +23,7 @@ class LogAdministrationUpdated
         $administration = $event->administration;
 
         ActivityLog::create([
-            'action' => 'administration_created',
+            'action' => 'administration_updated',
             'user_id' => $administration->user_id,
             'subject_type' => 'administration',
             'subject_id' => $administration->id,
