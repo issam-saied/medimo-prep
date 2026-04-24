@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Medication;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
 
 class MedicationService
 {
@@ -28,15 +29,16 @@ class MedicationService
 
     public function create(array $data): Medication
     {
-        return Medication::create($data);
+        $medication = Medication::create($data);
+        Cache::forget('medication_options');
+        return $medication;
     }
 
     public function update(int $id, array $data): Medication
     {
-        $patient = Medication::findOrFail($id);
-
-        $patient->update($data);
-
-        return $patient;
+        $medication = Medication::findOrFail($id);
+        $medication->update($data);
+        Cache::forget('medication_options');
+        return $medication;
     }
 }

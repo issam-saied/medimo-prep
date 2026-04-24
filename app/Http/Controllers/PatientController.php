@@ -10,6 +10,7 @@ use App\Services\PatientService;
 use App\Http\Requests\StorePatientRequest;
 
 use App\Models\Patient;
+use Illuminate\Support\Facades\Cache;
 
 class PatientController extends Controller
 {
@@ -64,21 +65,17 @@ class PatientController extends Controller
         $patient = Patient::findOrFail($id);
         $this->authorize('delete', $patient);
         $patient->delete();
+        Cache::forget('patient_options');
+        Cache::forget('dashboard_global_stats');
         return response()->noContent();
     }
 
     public function options()
     {
-        $patients = Patient::query()
-/*            ->whereHas('prescriptions', function ($query) {
-                $query->where('status', 'active');
-            })*/
-            ->select('id', 'name')
-            ->orderBy('name')
-            ->get();
+        $patients = Cache::remember('patient_options', 3600, function () {
+            return Patient::select('id', 'name')->orderBy('name')->get();
+        });
 
-        return response()->json([
-            'data' => $patients,
-        ]);
+        return response()->json(['data' => $patients]);
     }
 }

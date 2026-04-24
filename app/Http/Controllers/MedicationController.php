@@ -9,6 +9,7 @@ use App\Http\Resources\MedicationResource;
 use App\Models\Medication;
 use App\Models\Patient;
 use App\Services\MedicationService;
+use Illuminate\Support\Facades\Cache;
 
 class MedicationController extends Controller
 {
@@ -59,18 +60,16 @@ class MedicationController extends Controller
         $medication = Medication::findOrFail($id);
         $this->authorize('delete', $medication);
         $medication->delete();
+        Cache::forget('medication_options');
         return response()->noContent();
     }
 
     public function options()
     {
-        $medications = Medication::query()
-            ->select('*')
-            ->orderBy('name')
-            ->get();
+        $medications = Cache::remember('medication_options', 3600, function () {
+            return Medication::orderBy('name')->get();
+        });
 
-        return response()->json([
-            'data' => $medications,
-        ]);
+        return response()->json(['data' => $medications]);
     }
 }

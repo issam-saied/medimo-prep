@@ -65,6 +65,8 @@ Session-cookie based (not Bearer tokens). Vue must call `getCsrfCookie()` via `s
 - **`useDataTable` composable** (`resources/js/composables/useDataTable.js`) is the key shared abstraction for list pages — handles pagination, sort, filter, and 500ms debounced search. All list pages use it.
 - **Pages call `api.get/post/put/delete` directly** from `services/api.js` with no global store.
 - **Tailwind v4** — no `tailwind.config.js`; configured via the Vite plugin.
+- **`AppLayout.vue`** — shared sidebar + header shell. Sidebar nav items are filtered by `user.role` (Users and Activity Logs are admin-only). Header username links to `/profile`.
+- **`NotificationBell.vue`** — fetches unread notifications on mount, listens via Laravel Echo WebSocket, closes on outside click.
 
 ### Domain Model
 
@@ -73,19 +75,27 @@ Session-cookie based (not Bearer tokens). Vue must call `getCsrfCookie()` via `s
 `prescriptions.status`: `active | completed | stopped`  
 `administrations.status`: `given | missed | refused`
 
-`created_by_user_id` on prescriptions is always set server-side (`auth()->id()`), never from the client.
+`created_by_user_id` on prescriptions is always set server-side (`auth()->id()`), never from the client.  
+`user_id` on administrations is always set server-side (`auth()->id()`), never from the client.  
+`prescriber_id` must reference a user with `role = doctor` (enforced in `StorePrescriptionRequest`).  
+`prescriptions.start_date` and `end_date` are `datetime` columns (not `date`) — allows time-precise range checks.
+
+All 5 models (`Patient`, `Medication`, `Prescription`, `Administration`, `User`) use `SoftDeletes`. Delete buttons are admin-only, enforced via Policies.
 
 ### Testing Conventions
 
 - Feature tests use `RefreshDatabase` + SQLite in-memory (fast, no real DB needed).
 - Auth: `$this->actingAs($user)`.
 - Factory states: `User::factory()->doctor()->create()`.
-- Feature tests organized by domain: `tests/Feature/Prescriptions/`, `tests/Feature/Administrations/`.
-- Unit tests extend `PHPUnit\Framework\TestCase` directly (no Laravel bootstrap).
+- Feature tests organized by domain: `tests/Feature/Prescriptions/`, `tests/Feature/Administrations/`, etc.
+- Unit tests in `tests/Unit/` extend `PHPUnit\Framework\TestCase` directly (no Laravel bootstrap) — used for pure domain classes.
 - Naming: `test_it_*` snake_case describing behavior.
+- `start_date`/`end_date` in test fixtures must use `->toDateTimeString()`, not `->toDateString()`.
 
 ## Known Gotchas
 
 - `*PageOld.vue` files (Administrations, Prescriptions) exist in `resources/js/pages/` but are not registered in the router — they are legacy iterations.
 - Pagination is hardcoded to 5 per page inside `PrescriptionService::getFilteredPrescriptions()`.
 - Queue is `database` in `.env` but `sync` during tests (set in `phpunit.xml`).
+- Route order matters: `/patients/create` must be defined before `/patients/:id` in the router to avoid `create` being matched as an id.
+- `AdministrationValidator` (`app/Domain/Administration/`) handles date range checks for `administered_at` — used by `AdministrationService`, unit-tested directly.

@@ -7,6 +7,7 @@ use App\Models\Patient;
 use App\Models\Prescription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
@@ -75,9 +76,16 @@ class DashboardController extends Controller
                 'medication'     => $adm->prescription->medication->name . ' ' . $adm->prescription->medication->strength,
             ]);
 
+        [$activePrescriptions, $totalPatients] = Cache::remember('dashboard_global_stats', 300, function () {
+            return [
+                Prescription::where('status', 'active')->count(),
+                Patient::count(),
+            ];
+        });
+
         $stats = [
-            'active_prescriptions' => Prescription::where('status', 'active')->count(),
-            'total_patients'       => Patient::count(),
+            'active_prescriptions' => $activePrescriptions,
+            'total_patients'       => $totalPatients,
             'given_today'          => (clone $todayAdministrations)->where('status', 'given')->count(),
             'missed_today'         => (clone $todayAdministrations)->where('status', 'missed')->count(),
             'refused_today'        => (clone $todayAdministrations)->where('status', 'refused')->count(),

@@ -10,6 +10,7 @@ use App\Notifications\NewPrescriptionNotification;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
 
 class PrescriptionService
 {
@@ -112,6 +113,8 @@ class PrescriptionService
             Prescription::create($data)->id
         );
 
+        Cache::forget('dashboard_global_stats');
+
         event(new PrescriptionCreated($prescription));
 
         $nurses = User::where('role', 'nurse')->get();
@@ -150,6 +153,8 @@ class PrescriptionService
         }
 
         $prescription->update($data);
+
+        Cache::forget('dashboard_global_stats');
 
         event(new PrescriptionUpdated($prescription));
 

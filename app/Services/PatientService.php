@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Patient;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
 
 class PatientService
 {
@@ -30,15 +31,17 @@ class PatientService
 
     public function create(array $data): Patient
     {
-        return Patient::create($data);
+        $patient = Patient::create($data);
+        Cache::forget('patient_options');
+        Cache::forget('dashboard_global_stats');
+        return $patient;
     }
 
     public function update(int $id, array $data): Patient
     {
         $patient = Patient::findOrFail($id);
-
         $patient->update($data);
-
+        Cache::forget('patient_options');
         return $patient;
     }
 }
