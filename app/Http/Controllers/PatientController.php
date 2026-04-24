@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ListPatientRequest;
 use App\Http\Requests\UpdatePatientRequest;
+use App\Http\Resources\PatientDetailResource;
 use App\Http\Resources\PatientResource;
 use App\Services\PatientService;
 use App\Http\Requests\StorePatientRequest;
@@ -29,9 +30,13 @@ class PatientController extends Controller
 
     public function show($id)
     {
-        //no collection method is needed here since we are only returning a single patient,
-        //so we can directly return the PatientResource for the found patient
-        return new PatientResource(Patient::findOrFail($id));
+        $patient = Patient::with([
+            'prescriptions.medication',
+            'prescriptions.prescriber',
+            'prescriptions.administrations.user',
+        ])->findOrFail($id);
+
+        return new PatientDetailResource($patient);
     }
 
     public function store(StorePatientRequest $request)

@@ -45,8 +45,8 @@ class CreatePrescriptionTest extends TestCase
             'status' => 'active',
             'dosage' => '500 mg',
             'frequency' => 3,
-            'start_date' => now()->subDay()->toDateString(),
-            'end_date' => now()->addDay()->toDateString(),
+            'start_date' => now()->subDay()->toDateTimeString(),
+            'end_date' => now()->addDay()->toDateTimeString(),
         ];
 
         $response = $this->postJson('/api/prescriptions', $payload);
@@ -131,8 +131,8 @@ class CreatePrescriptionTest extends TestCase
             'medication_id' => $medication->id,
             'prescriber_id' => $prescriber->id,
             'status' => 'active',
-            'start_date' => now()->subDay()->toDateString(),
-            'end_date' => now()->addDay()->toDateString(),
+            'start_date' => now()->subDay()->toDateTimeString(),
+            'end_date' => now()->addDay()->toDateTimeString(),
         ]);
 
         $payload = [
@@ -142,8 +142,8 @@ class CreatePrescriptionTest extends TestCase
             'status' => 'active',
             'dosage' => '300 mg',
             'frequency' => 1,
-            'start_date' => now()->subDay()->toDateString(),
-            'end_date' => now()->addDay()->toDateString(),
+            'start_date' => now()->subDay()->toDateTimeString(),
+            'end_date' => now()->addDay()->toDateTimeString(),
         ];
 
         $response = $this->postJson('/api/prescriptions', $payload);

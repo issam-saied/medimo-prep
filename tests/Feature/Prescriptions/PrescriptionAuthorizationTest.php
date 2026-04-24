@@ -26,8 +26,8 @@ class PrescriptionAuthorizationTest extends TestCase
             'status' => 'active',
             'dosage' => '500 mg',
             'frequency' => 3,
-            'start_date' => now()->subDay()->toDateString(),
-            'end_date' => now()->addDay()->toDateString(),
+            'start_date' => now()->subDay()->toDateTimeString(),
+            'end_date' => now()->addDay()->toDateTimeString(),
         ];
 
         $response = $this->actingAs($doctor)->postJson('/api/prescriptions', $payload);
@@ -65,8 +65,8 @@ class PrescriptionAuthorizationTest extends TestCase
             'status' => 'active',
             'dosage' => '500 mg',
             'frequency' => 3,
-            'start_date' => now()->subDay()->toDateString(),
-            'end_date' => now()->addDay()->toDateString(),
+            'start_date' => now()->subDay()->toDateTimeString(),
+            'end_date' => now()->addDay()->toDateTimeString(),
         ];
 
         $response = $this->actingAs($nurse)->postJson('/api/prescriptions', $payload);
@@ -94,8 +94,8 @@ class PrescriptionAuthorizationTest extends TestCase
             'status' => 'active',
             'dosage' => '500 mg',
             'frequency' => 3,
-            'start_date' => now()->subDay()->toDateString(),
-            'end_date' => now()->addDay()->toDateString(),
+            'start_date' => now()->subDay()->toDateTimeString(),
+            'end_date' => now()->addDay()->toDateTimeString(),
         ];
 
         $response = $this->postJson('/api/prescriptions', $payload);

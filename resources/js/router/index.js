@@ -12,7 +12,8 @@ import MedicationsPage from "../pages/MedicationsPage.vue";
 import CreateMedicationPage from "../pages/CreateMedicationPage.vue";
 import UsersPage from "../pages/UsersPage.vue";
 import CreateUserPage from "../pages/CreateUserPage.vue";
-import UpdatePatientPage from "../pages/UpdatePatientPage.vue";
+import UpdatePatientPage from "../pages/UpdatePatientPage.vue"
+import PatientDetailPage from "../pages/PatientDetailPage.vue";
 import UpdatePrescriptionPage from "../pages/UpdatePrescriptionPage.vue";
 import UpdateMedicationPage from "../pages/UpdateMedicationPage.vue";
 import UpdateAdministrationPage from "../pages/UpdateAdministrationPage.vue";
@@ -39,6 +40,12 @@ const routes = [
         path: '/patients/create',
         name: 'patients.create',
         component: CreatePatientPage,
+        meta: { requiresAuth: true },
+    },
+    {
+        path: '/patients/:id',
+        name: 'patients.show',
+        component: PatientDetailPage,
         meta: { requiresAuth: true },
     },
     {

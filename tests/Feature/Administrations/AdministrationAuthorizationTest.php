@@ -27,8 +27,8 @@ class AdministrationAuthorizationTest extends TestCase
             'prescriber_id' => $prescriber->id,
             'created_by_user_id' => $createdBy->id,
             'status' => 'active',
-            'start_date' => now()->subDay()->toDateString(),
-            'end_date' => now()->addDay()->toDateString(),
+            'start_date' => now()->subDay()->toDateTimeString(),
+            'end_date' => now()->addDay()->toDateTimeString(),
         ]);
 
         $payload = [
@@ -73,8 +73,8 @@ class AdministrationAuthorizationTest extends TestCase
             'prescriber_id' => $prescriber->id,
             'created_by_user_id' => $createdBy->id,
             'status' => 'active',
-            'start_date' => now()->subDay()->toDateString(),
-            'end_date' => now()->addDay()->toDateString(),
+            'start_date' => now()->subDay()->toDateTimeString(),
+            'end_date' => now()->addDay()->toDateTimeString(),
         ]);
 
         $payload = [

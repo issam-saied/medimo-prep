@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Domain\Administration\AdministrationValidator;
 use App\Events\AdministrationUpdated;
 use App\Models\Administration;
 use App\Models\Prescription;
@@ -9,7 +10,6 @@ use App\Models\User;
 use App\Notifications\MissedOrRefusedDoseNotification;
 use App\Notifications\NewPrescriptionNotification;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
@@ -106,26 +106,18 @@ class AdministrationService
                 ]);
             }
 
-            //Carbon:parse to make sure no string comparisons, clearly readable, correct with null end_date
-            $administeredAt = Carbon::parse($data['administered_at']);
-            $startDate = Carbon::parse($prescription->start_date);
+            $validator = new AdministrationValidator();
 
-            //We can use isBefore or lt to compare the dates, lt (less than) is more concise and readable in this context
-            if ($administeredAt->lt($startDate)) {
+            if ($validator->isBeforeStart($data['administered_at'], $prescription->start_date)) {
                 throw ValidationException::withMessages([
                     'administered_at' => 'Administration time cannot be before the prescription start date.',
                 ]);
             }
 
-            if ($prescription->end_date !== null) {
-                $endDate = Carbon::parse($prescription->end_date);
-
-               //We can use isAfter or gt to compare the dates, gt (greater than) is more concise and readable in this context
-                if ($administeredAt->gt($endDate)) {
-                    throw ValidationException::withMessages([
-                        'administered_at' => 'Administration time cannot be after the prescription end date.',
-                    ]);
-                }
+            if ($prescription->end_date !== null && $validator->isAfterEnd($data['administered_at'], $prescription->end_date)) {
+                throw ValidationException::withMessages([
+                    'administered_at' => 'Administration time cannot be after the prescription end date.',
+                ]);
             }
 
             $data['user_id'] = auth()->id();
