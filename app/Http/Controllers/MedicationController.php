@@ -67,7 +67,7 @@ class MedicationController extends Controller
     public function options()
     {
         $medications = Cache::remember('medication_options', 3600, function () {
-            return Medication::orderBy('name')->get();
+            return Medication::orderBy('name')->get()->toArray();
         });
 
         return response()->json(['data' => $medications]);

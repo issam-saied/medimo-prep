@@ -4,9 +4,9 @@ import { useRouter, useRoute } from 'vue-router'
 import api from '../services/api'
 
 const form = reactive({
-    patient_id: '',
-    medication_id: '',
-    prescriber_id: '',
+    patient_name: '',
+    medication_name: '',
+    prescriber_name: '',
     dosage: '',
     frequency: '',
     status: 'active',
@@ -20,9 +20,6 @@ const errorMessage = ref('')
 const submitting = ref(false)
 const loadingFormData = ref(true)
 
-const patients = ref([])
-const medications = ref([])
-const prescribers = ref([])
 
 const isEndDateRequired = computed(() => {
     return form.status === 'completed' || form.status === 'stopped'
@@ -49,7 +46,8 @@ const submitForm = async () => {
     validationErrors.value = {}
 
     try {
-        await api.put(`/api/prescriptions/${route.params.id}`, form)
+        const { patient_name, medication_name, prescriber_name, ...payload } = form
+        await api.put(`/api/prescriptions/${route.params.id}`, payload)
         router.push('/prescriptions')
     } catch (error) {
         if (error.response?.status === 422) {
@@ -83,22 +81,13 @@ const inputClass = (field) => {
 onMounted(async () => {
     loadingFormData.value = true
     try {
-        const [patientsRes, medicationsRes, prescribersRes, prescriptionRes] = await Promise.all([
-            api.get('/api/patient-options'),
-            api.get('/api/medication-options'),
-            api.get('/api/users?role=doctor'),
-            api.get(`/api/prescriptions/${route.params.id}`),
-        ])
-
-        patients.value = patientsRes.data.data
-        medications.value = medicationsRes.data.data
-        prescribers.value = prescribersRes.data.data
+        const prescriptionRes = await api.get(`/api/prescriptions/${route.params.id}`)
 
         const prescription = prescriptionRes.data.data
 
-        form.patient_id = Number(prescription.patient?.id)
-        form.medication_id = Number(prescription.medication?.id)
-        form.prescriber_id = Number(prescription.prescriber?.id)
+        form.patient_name = prescription.patient?.name
+        form.medication_name = prescription.medication?.name + ' ' + prescription.medication?.strength
+        form.prescriber_name = prescription.prescriber?.name
         form.dosage = prescription.dosage
         form.frequency = Number(prescription.frequency)
         form.status = prescription.status
@@ -146,81 +135,18 @@ watch(() => form.status, (newStatus) => {
             class="space-y-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
         >
             <div>
-                <label for="patient_id"
-                       :class="[
-                            'mb-2 block text-sm font-medium',
-                            hasError('patient_id') ? 'text-red-600' : 'text-gray-700'
-                        ]"
-                >
-                    Patient
-                </label>
-                <select
-                    v-model="form.patient_id"
-                    id="patient_id"
-                    required
-                    @change="clearFieldError('patient_id')"
-                    :class="inputClass('patient_id')"
-                >
-                    <option value="" disabled>Select a patient</option>
-                    <option v-for="patient in patients" :key="patient.id" :value="patient.id">
-                        {{ patient.name }}
-                    </option>
-                </select>
-                <p v-if="getFieldError('patient_id')" class="mt-1 text-sm text-red-600">
-                    {{ getFieldError('patient_id') }}
-                </p>
+                <label class="mb-2 block text-sm font-medium text-gray-700">Patient</label>
+                <p class="text-sm text-gray-500 bg-gray-50 border border-gray-200 rounded px-3 py-2">{{ form.patient_name }}</p>
             </div>
 
             <div>
-                <label for="medication_id"
-                       :class="[
-                            'mb-2 block text-sm font-medium',
-                            hasError('medication_id') ? 'text-red-600' : 'text-gray-700'
-                        ]"
-                >
-                    Medication
-                </label>
-                <select
-                    v-model="form.medication_id"
-                    id="medication_id"
-                    @change="clearFieldError('medication_id')"
-                    :class="inputClass('medication_id')"
-                    required
-                >
-                    <option value="" disabled>Select a medication</option>
-                    <option v-for="medication in medications" :key="medication.id" :value="medication.id">
-                        {{ medication.name }} - {{ medication.strength }}
-                    </option>
-                </select>
-                <p v-if="getFieldError('medication_id')" class="mt-1 text-sm text-red-600">
-                    {{ getFieldError('medication_id') }}
-                </p>
+                <label class="mb-2 block text-sm font-medium text-gray-700">Medication</label>
+                <p class="text-sm text-gray-500 bg-gray-50 border border-gray-200 rounded px-3 py-2">{{ form.medication_name }}</p>
             </div>
 
             <div>
-                <label for="prescriber_id"
-                       :class="[
-                             'mb-2 block text-sm font-medium',
-                             hasError('prescriber_id') ? 'text-red-600' : 'text-gray-700'
-                       ]"
-                >
-                    Prescriber
-                </label>
-                <select
-                    v-model="form.prescriber_id"
-                    id="prescriber_id"
-                    @change="clearFieldError('prescriber_id')"
-                    :class="inputClass('prescriber_id')"
-                    required
-                >
-                    <option value="" disabled>Select a prescriber</option>
-                    <option v-for="prescriber in prescribers" :key="prescriber.id" :value="prescriber.id">
-                        {{ prescriber.name }}
-                    </option>
-                </select>
-                <p v-if="getFieldError('prescriber_id')" class="mt-1 text-sm text-red-600">
-                    {{ getFieldError('prescriber_id') }}
-                </p>
+                <label class="mb-2 block text-sm font-medium text-gray-700">Prescriber</label>
+                <p class="text-sm text-gray-500 bg-gray-50 border border-gray-200 rounded px-3 py-2">{{ form.prescriber_name }}</p>
             </div>
 
             <div>

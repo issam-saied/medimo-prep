@@ -73,7 +73,7 @@ class PatientController extends Controller
     public function options()
     {
         $patients = Cache::remember('patient_options', 3600, function () {
-            return Patient::select('id', 'name')->orderBy('name')->get();
+            return Patient::select('id', 'name')->orderBy('name')->get()->toArray();
         });
 
         return response()->json(['data' => $patients]);
