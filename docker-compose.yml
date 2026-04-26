@@ -3,7 +3,6 @@ services:
     build: .
     volumes:
       - .:/var/www/html
-      - /var/www/html/vendor
     depends_on:
       mysql:
         condition: service_healthy
@@ -31,6 +30,15 @@ services:
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - app
+
+  queue:
+    build: .
+    command: php artisan queue:listen --tries=1 --timeout=0
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      mysql:
+        condition: service_healthy
 
   reverb:
     build: .
