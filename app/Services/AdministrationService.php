@@ -146,15 +146,18 @@ class AdministrationService
     {
         $administration = Administration::findOrFail($id);
 
-        $before = ['note' => $administration->note];
+        $oldNote = $administration->note;
 
         $administration->update([
             'note' => $data['note'] ?? $administration->note,
         ]);
 
-        $after = ['note' => $administration->note];
+        $changes = [];
+        if ($oldNote != $administration->note) {
+            $changes['note'] = ['from' => $oldNote, 'to' => $administration->note];
+        }
 
-        event(new AdministrationUpdated($administration, compact('before', 'after')));
+        event(new AdministrationUpdated($administration, $changes));
 
         return $administration;
     }
