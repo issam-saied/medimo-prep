@@ -13,6 +13,11 @@ class ActivityLog extends Model
         'subject_type',
         'subject_id',
         'description',
+        'changes',
+    ];
+
+    protected $casts = [
+        'changes' => 'array',
     ];
 
     public function user(): BelongsTo

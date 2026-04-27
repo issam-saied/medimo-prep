@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../services/api'
 
@@ -44,6 +44,15 @@ onMounted(async () => {
     const meRes = await api.get('/api/me')
     currentUserRole.value = meRes.data.user.role
     loadDashboard()
+
+    window.Echo.channel('dashboard')
+        .listen('.administration.changed', () => {
+            loadDashboard()
+        })
+})
+
+onUnmounted(() => {
+    window.Echo.leaveChannel('dashboard')
 })
 </script>
 

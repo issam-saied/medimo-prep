@@ -30,6 +30,7 @@ class LogPrescriptionUpdated
             'description' => auth()->id()
                 ? 'Prescription updated with status ' . $prescription->status
                 : 'Prescription auto-expired by scheduler',
+            'changes' => $event->changes ?: null,
         ]);
     }
 }

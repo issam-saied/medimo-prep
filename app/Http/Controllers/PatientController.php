@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\PatientDeleted;
 use App\Http\Requests\ListPatientRequest;
 use App\Http\Requests\UpdatePatientRequest;
 use App\Http\Resources\PatientDetailResource;
@@ -67,6 +68,7 @@ class PatientController extends Controller
         $patient->delete();
         Cache::forget('patient_options');
         Cache::forget('dashboard_global_stats');
+        event(new PatientDeleted($patient));
         return response()->noContent();
     }
 

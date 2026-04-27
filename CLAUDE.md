@@ -4,13 +4,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-**Full dev stack (recommended):**
+**With Docker (recommended):**
 ```bash
-composer dev
-# Starts concurrently: artisan serve, queue:listen, pail (log viewer), vite dev server
+docker compose up -d        # start all services (app, mysql, nginx, queue, reverb)
+npm run dev                 # frontend hot reload (local, not in Docker)
+# visit http://localhost:8000
 ```
 
-**First-time setup:**
+**Docker first-time setup:**
+```bash
+cp .env.docker .env
+docker compose up -d --build
+docker compose exec app php artisan key:generate
+docker compose exec app php artisan migrate --seed
+npm install && npm run build
+```
+
+**Without Docker (local):**
+```bash
+composer dev
+# Starts concurrently: artisan serve, queue:listen, pail (log viewer), vite dev server, reverb
+```
+
+**First-time setup (local):**
 ```bash
 composer setup
 # Runs: composer install, .env copy, key:generate, migrate, npm install, npm run build
@@ -45,7 +61,7 @@ Medical medication management app. Laravel 13 serves as both the API and SPA hos
 
 Session-cookie based (not Bearer tokens). Vue must call `getCsrfCookie()` via `services/api.js` before the first POST to `/login`. All Axios requests use `withCredentials: true`. The Vue Router guard calls `GET /api/me` on every protected navigation — there is no cached auth state in the frontend.
 
-`api.js` has a hardcoded `baseURL` of `http://127.0.0.1:8000` — must match the port artisan serve uses.
+`api.js` uses `baseURL: ''` (relative URLs) so it works with both Docker (port 8000) and local dev.
 
 ### Laravel Backend Layers
 
@@ -66,7 +82,8 @@ Session-cookie based (not Bearer tokens). Vue must call `getCsrfCookie()` via `s
 - **Pages call `api.get/post/put/delete` directly** from `services/api.js` with no global store.
 - **Tailwind v4** — no `tailwind.config.js`; configured via the Vite plugin.
 - **`AppLayout.vue`** — shared sidebar + header shell. Sidebar nav items are filtered by `user.role` (Users and Activity Logs are admin-only). Header username links to `/profile`.
-- **`NotificationBell.vue`** — fetches unread notifications on mount, listens via Laravel Echo WebSocket, closes on outside click.
+- **`NotificationBell.vue`** — fetches unread notifications on mount, listens via Laravel Echo WebSocket on private channel `App.Models.User.{id}`, closes on outside click.
+- **`DashboardPage.vue`** — listens to public channel `dashboard` via Echo; re-fetches data when `administration.changed` event is received (real-time updates).
 
 ### Domain Model
 
@@ -99,3 +116,6 @@ All 5 models (`Patient`, `Medication`, `Prescription`, `Administration`, `User`)
 - Queue is `database` in `.env` but `sync` during tests (set in `phpunit.xml`).
 - Route order matters: `/patients/create` must be defined before `/patients/:id` in the router to avoid `create` being matched as an id.
 - `AdministrationValidator` (`app/Domain/Administration/`) handles date range checks for `administered_at` — used by `AdministrationService`, unit-tested directly.
+- Docker networking: backend services connect to Reverb via service name `reverb:8080`; browser connects via `localhost:8080`. `REVERB_HOST` and `VITE_REVERB_HOST` must be set separately in `.env`.
+- `AdministrationCreated` and `AdministrationUpdated` events implement `ShouldBroadcast` and broadcast on the public `dashboard` channel as `administration.changed`.
+- Caching: `patient_options` and `medication_options` are cached for 1 hour and invalidated on create/update/delete. `dashboard_global_stats` is cached for 5 minutes.

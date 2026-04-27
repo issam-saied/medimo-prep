@@ -21,6 +21,7 @@ class ActivityLogResource extends JsonResource
             'subject_id'   => $this->subject_id,
             'description'  => $this->description,
             'user_name'    => $this->user?->name ?? 'System',
+            'changes'      => $this->changes,
             'created_at'   => $this->created_at->format('Y-m-d H:i'),
         ];
     }
