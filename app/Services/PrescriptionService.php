@@ -152,11 +152,20 @@ class PrescriptionService
             ]);
         }
 
+        $fields = ['dosage', 'frequency', 'status', 'start_date', 'end_date'];
+        $before = $prescription->only($fields);
+
         $prescription->update($data);
+
+        $after = $prescription->only($fields);
+        $changes = array_filter(
+            array_map(fn($f) => $before[$f] != $after[$f] ? ['from' => $before[$f], 'to' => $after[$f]] : null, array_combine($fields, $fields)),
+            fn($v) => $v !== null
+        );
 
         Cache::forget('dashboard_global_stats');
 
-        event(new PrescriptionUpdated($prescription));
+        event(new PrescriptionUpdated($prescription, $changes));
 
         return $prescription;
 

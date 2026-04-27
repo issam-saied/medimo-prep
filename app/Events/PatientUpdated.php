@@ -2,18 +2,16 @@
 
 namespace App\Events;
 
-use App\Models\Prescription;
+use App\Models\Patient;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class PrescriptionUpdated
+class PatientUpdated
 {
     use Dispatchable, SerializesModels;
 
     public function __construct(
-        public Prescription $prescription,
+        public Patient $patient,
         public array $changes = []
-    ) {
-    }
+    ) {}
 }
-

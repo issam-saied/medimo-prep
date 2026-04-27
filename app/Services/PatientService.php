@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Events\PatientCreated;
+use App\Events\PatientUpdated;
 use App\Models\Patient;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
@@ -34,14 +36,23 @@ class PatientService
         $patient = Patient::create($data);
         Cache::forget('patient_options');
         Cache::forget('dashboard_global_stats');
+        event(new PatientCreated($patient));
         return $patient;
     }
 
     public function update(int $id, array $data): Patient
     {
         $patient = Patient::findOrFail($id);
+        $fields = ['name', 'birthdate', 'gender', 'room_number'];
+        $before = $patient->only($fields);
         $patient->update($data);
+        $after = $patient->only($fields);
+        $changes = array_filter(
+            array_map(fn($f) => $before[$f] != $after[$f] ? ['from' => $before[$f], 'to' => $after[$f]] : null, array_combine($fields, $fields)),
+            fn($v) => $v !== null
+        );
         Cache::forget('patient_options');
+        event(new PatientUpdated($patient, $changes));
         return $patient;
     }
 }

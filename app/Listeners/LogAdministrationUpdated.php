@@ -28,6 +28,7 @@ class LogAdministrationUpdated
             'subject_type' => 'administration',
             'subject_id' => $administration->id,
             'description' => 'Note of administration has been modified',
+            'changes' => $event->changes ?: null,
         ]);
     }
 }
