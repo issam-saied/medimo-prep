@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Administrations;
 
+use App\Models\ActivityLog;
 use App\Models\Medication;
 use App\Models\Patient;
 use App\Models\Prescription;
@@ -66,5 +67,49 @@ class AdministrationActivityLogTest extends TestCase
             'action' => 'administration_created',
             'subject_type' => 'administration',
         ]);
+    }
+
+    public function test_updating_an_administration_writes_an_activity_log_with_changes(): void
+    {
+        $user = User::factory()->nurse()->create();
+        $this->auth($user);
+
+        $prescription = Prescription::factory()->create([
+            'patient_id' => Patient::factory()->create()->id,
+            'medication_id' => \App\Models\Medication::factory()->create()->id,
+            'prescriber_id' => User::factory()->create()->id,
+            'created_by_user_id' => User::factory()->create()->id,
+            'status' => 'active',
+            'start_date' => now()->subDay()->toDateTimeString(),
+            'end_date' => now()->addDay()->toDateTimeString(),
+        ]);
+
+        $createResponse = $this->postJson('/api/administrations', [
+            'prescription_id' => $prescription->id,
+            'status' => 'given',
+            'administered_at' => now()->toDateTimeString(),
+            'note' => 'Original note',
+        ]);
+        $createResponse->assertCreated();
+
+        $administrationId = $createResponse->json('data.id');
+
+        $updateResponse = $this->putJson("/api/administrations/{$administrationId}", [
+            'note' => 'Updated note',
+        ]);
+        $updateResponse->assertOk();
+
+        $this->assertDatabaseHas('activity_logs', [
+            'action' => 'administration_updated',
+            'user_id' => $user->id,
+            'subject_type' => 'administration',
+            'subject_id' => $administrationId,
+        ]);
+
+        $log = ActivityLog::where('action', 'administration_updated')->first();
+        $this->assertNotNull($log->changes);
+        $this->assertArrayHasKey('note', $log->changes);
+        $this->assertEquals('Original note', $log->changes['note']['from']);
+        $this->assertEquals('Updated note', $log->changes['note']['to']);
     }
 }

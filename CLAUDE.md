@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **With Docker (recommended):**
 ```bash
-docker compose up -d        # start all services (app, mysql, nginx, queue, reverb)
+docker compose up -d        # start all services (app, mysql, nginx, queue, reverb, scheduler)
 npm run dev                 # frontend hot reload (local, not in Docker)
 # visit http://localhost:8000
 ```
@@ -23,7 +23,7 @@ npm install && npm run build
 **Without Docker (local):**
 ```bash
 composer dev
-# Starts concurrently: artisan serve, queue:listen, pail (log viewer), vite dev server, reverb
+# Starts concurrently: artisan serve, queue:listen, pail (log viewer), vite dev server, reverb, schedule:work
 ```
 
 **First-time setup (local):**
@@ -72,7 +72,7 @@ Session-cookie based (not Bearer tokens). Vue must call `getCsrfCookie()` via `s
 | Services | `app/Services/` | Business rules (e.g., blocking duplicate active prescriptions) + fire domain events |
 | Resources | `app/Http/Resources/` | Explicitly shaped JSON output, always including eager-loaded relations |
 | Domain | `app/Domain/` | Pure PHP classes (no Laravel deps) for isolated business rules; unit-tested directly |
-| Events/Listeners | `app/Events/`, `app/Listeners/` | Fired on create/update for Prescriptions and Administrations; listeners write to `activity_logs`. Registered in `AppServiceProvider::$listen` |
+| Events/Listeners | `app/Events/`, `app/Listeners/` | Fired on create/update for Prescriptions, Administrations, and Patients (Created/Updated/Deleted); listeners write to `activity_logs`. Registered in `AppServiceProvider::$listen`. Login/logout are logged directly in `AuthController` (no event). |
 
 ### Vue Frontend
 
@@ -84,6 +84,7 @@ Session-cookie based (not Bearer tokens). Vue must call `getCsrfCookie()` via `s
 - **`AppLayout.vue`** — shared sidebar + header shell. Sidebar nav items are filtered by `user.role` (Users and Activity Logs are admin-only). Header username links to `/profile`.
 - **`NotificationBell.vue`** — fetches unread notifications on mount, listens via Laravel Echo WebSocket on private channel `App.Models.User.{id}`, closes on outside click.
 - **`DashboardPage.vue`** — listens to public channel `dashboard` via Echo; re-fetches data when `administration.changed` event is received (real-time updates).
+- **`ActivityLogsPage.vue`** — displays color-coded action badges (`actionClass` helper: red=deleted, green=created, blue=login/logout) and renders before/after field diffs from `log.changes` (red=from, green=to).
 
 ### Domain Model
 
@@ -104,7 +105,7 @@ All 5 models (`Patient`, `Medication`, `Prescription`, `Administration`, `User`)
 - Feature tests use `RefreshDatabase` + SQLite in-memory (fast, no real DB needed).
 - Auth: `$this->actingAs($user)`.
 - Factory states: `User::factory()->doctor()->create()`.
-- Feature tests organized by domain: `tests/Feature/Prescriptions/`, `tests/Feature/Administrations/`, etc.
+- Feature tests organized by domain: `tests/Feature/Prescriptions/`, `tests/Feature/Administrations/`, `tests/Feature/Patients/`, `tests/Feature/Auth/`, etc.
 - Unit tests in `tests/Unit/` extend `PHPUnit\Framework\TestCase` directly (no Laravel bootstrap) — used for pure domain classes.
 - Naming: `test_it_*` snake_case describing behavior.
 - `start_date`/`end_date` in test fixtures must use `->toDateTimeString()`, not `->toDateString()`.
@@ -114,8 +115,11 @@ All 5 models (`Patient`, `Medication`, `Prescription`, `Administration`, `User`)
 - `*PageOld.vue` files (Administrations, Prescriptions) exist in `resources/js/pages/` but are not registered in the router — they are legacy iterations.
 - Pagination is hardcoded to 5 per page inside `PrescriptionService::getFilteredPrescriptions()`.
 - Queue is `database` in `.env` but `sync` during tests (set in `phpunit.xml`).
-- Route order matters: `/patients/create` must be defined before `/patients/:id` in the router to avoid `create` being matched as an id.
+- Route order matters: `/patients/create` must be defined before `/patients/:id` in the router to avoid `create` being matched as an id. Same applies to API routes — `/patients/export` and `/prescriptions/export` must be registered **before** their `apiResource` to avoid `export` being matched as a record ID (returns 404 otherwise).
 - `AdministrationValidator` (`app/Domain/Administration/`) handles date range checks for `administered_at` — used by `AdministrationService`, unit-tested directly.
+- Scheduler: `app:expire-prescriptions` runs daily at midnight (`->daily()` in `routes/console.php`). In Docker it runs via the `scheduler` service (`php artisan schedule:work`); locally via `composer dev`. Without either, the command never fires automatically.
 - Docker networking: backend services connect to Reverb via service name `reverb:8080`; browser connects via `localhost:8080`. `REVERB_HOST` and `VITE_REVERB_HOST` must be set separately in `.env`.
 - `AdministrationCreated` and `AdministrationUpdated` events implement `ShouldBroadcast` and broadcast on the public `dashboard` channel as `administration.changed`.
+- `activity_logs.changes` is a nullable JSON column (added in `2026_04_26` migration) storing field-level diffs as `{ field: { from: oldValue, to: newValue } }`. All entity updates (prescriptions, administrations, patients) must use this exact structure — a previous `{ before: {...}, after: {...} }` format on administrations caused empty display in Activity Logs (fixed in PR #7). Login/logout entries have no changes.
 - Caching: `patient_options` and `medication_options` are cached for 1 hour and invalidated on create/update/delete. `dashboard_global_stats` is cached for 5 minutes.
+- Export: `GET /api/patients/export` and `GET /api/prescriptions/export` support `?format=csv|pdf` and accept the same filter params as their `index` endpoints. PDF uses `barryvdh/laravel-dompdf` with Blade templates in `resources/views/exports/`. Frontend triggers downloads via axios blob (`responseType: 'blob'`) — required because auth is session-cookie based.
