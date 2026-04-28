@@ -51,5 +51,14 @@ services:
       mysql:
         condition: service_healthy
 
+  scheduler:
+    build: .
+    command: php artisan schedule:work
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      mysql:
+        condition: service_healthy
+
 volumes:
   mysql_data:
