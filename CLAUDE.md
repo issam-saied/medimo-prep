@@ -105,7 +105,7 @@ All 5 models (`Patient`, `Medication`, `Prescription`, `Administration`, `User`)
 - Feature tests use `RefreshDatabase` + SQLite in-memory (fast, no real DB needed).
 - Auth: `$this->actingAs($user)`.
 - Factory states: `User::factory()->doctor()->create()`.
-- Feature tests organized by domain: `tests/Feature/Prescriptions/`, `tests/Feature/Administrations/`, `tests/Feature/Patients/`, `tests/Feature/Auth/`, etc.
+- Feature tests organized by domain: `tests/Feature/Prescriptions/`, `tests/Feature/Administrations/`, `tests/Feature/Patients/`, `tests/Feature/Auth/`, `tests/Feature/Medications/`, etc.
 - Unit tests in `tests/Unit/` extend `PHPUnit\Framework\TestCase` directly (no Laravel bootstrap) — used for pure domain classes.
 - Naming: `test_it_*` snake_case describing behavior.
 - `start_date`/`end_date` in test fixtures must use `->toDateTimeString()`, not `->toDateString()`.
