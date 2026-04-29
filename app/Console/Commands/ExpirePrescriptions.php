@@ -20,7 +20,7 @@ class ExpirePrescriptions extends Command
         $expired = Prescription::query()
             ->where('status', 'active')
             ->whereNotNull('end_date')
-            ->where('end_date', '<', today())
+            ->where('end_date', '<', now())
             ->get();
 
         foreach ($expired as $prescription) {
