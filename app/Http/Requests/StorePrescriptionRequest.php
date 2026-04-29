@@ -29,6 +29,7 @@ class StorePrescriptionRequest extends FormRequest
             'patient_id' => 'required|exists:patients,id',
             'medication_id' => 'required|exists:medications,id',
             'prescriber_id' => ['required', Rule::exists('users', 'id')->where('role', 'doctor')],
+            'nurse_id' => ['required', Rule::exists('users', 'id')->where('role', 'nurse')],
             'dosage' => 'required|string',
             'frequency' => 'required|integer|min:1|max:24',
             'status' => 'required|in:active,completed,stopped',

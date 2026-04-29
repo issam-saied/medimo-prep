@@ -106,6 +106,13 @@ class AdministrationService
                 ]);
             }
 
+            //Business rule: Nurse can only administer prescriptions assigned to them
+            if (auth()->user()->role === 'nurse' && $prescription->nurse_id !== auth()->id()) {
+                throw ValidationException::withMessages([
+                    'prescription_id' => 'You are not the assigned nurse for this prescription.',
+                ]);
+            }
+
             $validator = new AdministrationValidator();
 
             if ($validator->isBeforeStart($data['administered_at'], $prescription->start_date)) {

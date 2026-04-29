@@ -23,6 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/patient-options', [PatientController::class, 'options']);
     Route::get('/medication-options', [MedicationController::class, 'options']);
     Route::get('/prescription-options', [PrescriptionController::class, 'options']);
+    Route::get('/nurse-options', [UserController::class, 'nurseOptions']);
     Route::get('/activity-logs', [ActivityLogController::class, 'index']);
     Route::get('/dashboard', [DashboardController::class, 'index']);
     Route::get('/notifications', [NotificationController::class, 'index']);

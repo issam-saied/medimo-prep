@@ -30,14 +30,7 @@ class DashboardController extends Controller
         }
 
         if ($user->hasRole('nurse')) {
-            $query->orderByRaw("
-                  EXISTS (
-                      SELECT 1 FROM administrations
-                      WHERE administrations.prescription_id = prescriptions.id
-                      AND administrations.user_id = ?
-                      AND DATE(administrations.administered_at) = ?
-                  ) DESC
-              ", [$user->id, $date]);
+            $query->where('nurse_id', $user->id);
         }
 
         if ($request->filled('patient_name')) {

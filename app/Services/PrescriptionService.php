@@ -21,6 +21,7 @@ class PrescriptionService
             'medication:id,name,strength,unit',
             'prescriber:id,name,job_title,role,organization',
             'createdByUser:id,name,job_title,role,organization',
+            'nurse:id,name',
         ]);
 
         if (!empty($filters['status'] ?? null)) {
@@ -109,7 +110,7 @@ class PrescriptionService
         // Set the created_by_user_id to the currently authenticated user's ID
         $data['created_by_user_id'] = auth()->id();
 
-        $prescription = Prescription::with(['patient', 'medication'])->find(
+        $prescription = Prescription::with(['patient', 'medication', 'nurse'])->find(
             Prescription::create($data)->id
         );
 
@@ -117,8 +118,9 @@ class PrescriptionService
 
         event(new PrescriptionCreated($prescription));
 
-        $nurses = User::where('role', 'nurse')->get();
-        Notification::send($nurses, new NewPrescriptionNotification($prescription));
+        if ($prescription->nurse) {
+            $prescription->nurse->notify(new NewPrescriptionNotification($prescription));
+        }
 
         return $prescription;
     }
@@ -152,7 +154,7 @@ class PrescriptionService
             ]);
         }
 
-        $fields = ['dosage', 'frequency', 'status', 'start_date', 'end_date'];
+        $fields = ['dosage', 'frequency', 'status', 'start_date', 'end_date', 'nurse_id'];
         $before = $prescription->only($fields);
 
         $prescription->update($data);

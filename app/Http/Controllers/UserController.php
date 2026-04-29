@@ -55,6 +55,12 @@ class UserController extends Controller
         return response()->noContent();
     }
 
+    public function nurseOptions()
+    {
+        $nurses = User::where('role', 'nurse')->select('id', 'name')->orderBy('name')->get();
+        return response()->json(['data' => $nurses]);
+    }
+
     public function update(UpdateUserRequest $request, $id)
     {
         // If you later add ownership rules (e.g. "a user can edit their own profile"),

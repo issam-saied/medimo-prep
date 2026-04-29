@@ -7,6 +7,7 @@ const form = reactive({
     patient_id: '',
     medication_id: '',
     prescriber_id: '',
+    nurse_id: '',
     dosage: '',
     frequency: '',
     status: 'active',
@@ -22,6 +23,7 @@ const loadingFormData = ref(true)
 const patients = ref([])
 const medications = ref([])
 const prescribers = ref([])
+const nurses = ref([])
 
 const isEndDateRequired = computed(() => {
     return form.status === 'completed' || form.status === 'stopped'
@@ -83,15 +85,17 @@ onMounted(async () => {
     loadingFormData.value = true
 
     try {
-        const [patientsRes, medicationsRes, prescribersRes] = await Promise.all([
+        const [patientsRes, medicationsRes, prescribersRes, nursesRes] = await Promise.all([
             api.get('/api/patient-options'),
             api.get('/api/medication-options'),
             api.get('/api/users?role=doctor'),
+            api.get('/api/nurse-options'),
         ])
 
         patients.value = patientsRes.data.data
         medications.value = medicationsRes.data.data
         prescribers.value = prescribersRes.data.data
+        nurses.value = nursesRes.data.data
     } catch (error) {
         console.error('Error fetching form data:', error)
         errorMessage.value = 'Failed to load form data.'
@@ -206,6 +210,32 @@ watch(() => form.status, (newStatus) => {
                 </select>
                 <p v-if="getFieldError('prescriber_id')" class="mt-1 text-sm text-red-600">
                     {{ getFieldError('prescriber_id') }}
+                </p>
+            </div>
+
+            <div>
+                <label for="nurse_id"
+                       :class="[
+                             'mb-2 block text-sm font-medium',
+                             hasError('nurse_id') ? 'text-red-600' : 'text-gray-700'
+                       ]"
+                >
+                    Responsible Nurse
+                </label>
+                <select
+                    v-model="form.nurse_id"
+                    id="nurse_id"
+                    @change="clearFieldError('nurse_id')"
+                    :class="inputClass('nurse_id')"
+                    required
+                >
+                    <option value="" disabled>Select a nurse</option>
+                    <option v-for="nurse in nurses" :key="nurse.id" :value="nurse.id">
+                        {{ nurse.name }}
+                    </option>
+                </select>
+                <p v-if="getFieldError('nurse_id')" class="mt-1 text-sm text-red-600">
+                    {{ getFieldError('nurse_id') }}
                 </p>
             </div>
 
