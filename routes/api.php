@@ -13,6 +13,8 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/patients/export', [PatientController::class, 'export']);
+    Route::get('/prescriptions/export', [PrescriptionController::class, 'export']);
     Route::apiResource('users', UserController::class);
     Route::apiResource('patients', PatientController::class);
     Route::apiResource('medications', MedicationController::class);

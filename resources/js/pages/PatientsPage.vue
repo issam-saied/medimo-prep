@@ -38,6 +38,22 @@ const {
     }),
 })
 
+const exportData = async (format) => {
+    const params = new URLSearchParams({ format })
+    const name = nameFilter.value.trim()
+    const birthdate = birthDateFilter.value.trim()
+    if (name.length >= 2) params.set('name', name)
+    if (birthdate.length >= 2) params.set('birthdate', birthdate)
+
+    const response = await api.get(`/api/patients/export?${params}`, { responseType: 'blob' })
+    const url = URL.createObjectURL(response.data)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `patients.${format}`
+    a.click()
+    URL.revokeObjectURL(url)
+}
+
 const deletePatient = async (patient) => {
     if (!confirm(`Delete patient "${patient.name}"? This cannot be undone.`)) return
     try {
@@ -92,6 +108,14 @@ watch(
                     class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
                 New Patient
+            </button>
+            <button @click="exportData('csv')"
+                    class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+                Export CSV
+            </button>
+            <button @click="exportData('pdf')"
+                    class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+                Export PDF
             </button>
         </div>
 

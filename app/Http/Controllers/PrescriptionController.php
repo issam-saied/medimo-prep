@@ -8,6 +8,7 @@ use App\Http\Requests\UpdatePrescriptionRequest;
 use App\Http\Resources\PrescriptionResource;
 use App\Models\Prescription;
 use App\Services\PrescriptionService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class PrescriptionController extends Controller
@@ -65,6 +66,59 @@ class PrescriptionController extends Controller
         $this->authorize('delete', $prescription);
         $prescription->delete();
         return response()->noContent();
+    }
+
+    public function export(Request $request)
+    {
+        $format = $request->query('format', 'csv');
+
+        $query = Prescription::with(['patient', 'medication', 'prescriber']);
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('patient_name')) {
+            $query->whereHas('patient', fn($q) => $q->where('name', 'like', '%' . $request->patient_name . '%'));
+        }
+
+        if ($request->filled('prescriber_name')) {
+            $query->whereHas('prescriber', fn($q) => $q->where('name', 'like', '%' . $request->prescriber_name . '%'));
+        }
+
+        if ($request->filled('medication_name')) {
+            $query->whereHas('medication', fn($q) => $q->where('name', 'like', '%' . $request->medication_name . '%'));
+        }
+
+        $prescriptions = $query->orderByDesc('start_date')->get();
+
+        if ($format === 'pdf') {
+            $pdf = Pdf::loadView('exports.prescriptions', compact('prescriptions'))->setPaper('a4', 'landscape');
+            return $pdf->download('prescriptions.pdf');
+        }
+
+        $headers = ['Content-Type' => 'text/csv', 'Content-Disposition' => 'attachment; filename="prescriptions.csv"'];
+
+        $callback = function () use ($prescriptions) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['ID', 'Patient', 'Medication', 'Prescriber', 'Dosage', 'Frequency', 'Status', 'Start Date', 'End Date']);
+            foreach ($prescriptions as $p) {
+                fputcsv($handle, [
+                    $p->id,
+                    $p->patient->name,
+                    $p->medication->name . ' ' . $p->medication->strength . $p->medication->unit,
+                    $p->prescriber->name,
+                    $p->dosage,
+                    $p->frequency . 'x/day',
+                    $p->status,
+                    \Carbon\Carbon::parse($p->start_date)->format('Y-m-d'),
+                    $p->end_date ? \Carbon\Carbon::parse($p->end_date)->format('Y-m-d') : '',
+                ]);
+            }
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     public function options(Request $request)

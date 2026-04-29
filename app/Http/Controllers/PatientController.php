@@ -11,6 +11,8 @@ use App\Services\PatientService;
 use App\Http\Requests\StorePatientRequest;
 
 use App\Models\Patient;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class PatientController extends Controller
@@ -70,6 +72,45 @@ class PatientController extends Controller
         Cache::forget('dashboard_global_stats');
         event(new PatientDeleted($patient));
         return response()->noContent();
+    }
+
+    public function export(Request $request)
+    {
+        $format = $request->query('format', 'csv');
+
+        $query = Patient::query();
+
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+
+        if ($request->filled('birthdate')) {
+            $query->whereDate('birthdate', $request->birthdate);
+        }
+
+        $patients = $query->orderBy('name')->get();
+
+        if ($format === 'pdf') {
+            $pdf = Pdf::loadView('exports.patients', compact('patients'))->setPaper('a4');
+            return $pdf->download('patients.pdf');
+        }
+
+        $headers = ['Content-Type' => 'text/csv', 'Content-Disposition' => 'attachment; filename="patients.csv"'];
+
+        $callback = function () use ($patients) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['ID', 'Name', 'Birthdate']);
+            foreach ($patients as $patient) {
+                fputcsv($handle, [
+                    $patient->id,
+                    $patient->name,
+                    $patient->birthdate ? \Carbon\Carbon::parse($patient->birthdate)->format('Y-m-d') : '',
+                ]);
+            }
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     public function options()
