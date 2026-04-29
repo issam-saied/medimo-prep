@@ -38,10 +38,13 @@ class UpdatePrescriptionTest extends TestCase
         $prescriber = User::factory()->doctor()->create();
         $createdBy = User::factory()->create();
 
+        $nurse = User::factory()->nurse()->create();
+
         $payload = [
             'patient_id' => $patient->id,
             'medication_id' => $medication->id,
             'prescriber_id' => $prescriber->id,
+            'nurse_id' => $nurse->id,
             'created_by_user_id' => $createdBy->id,
             'status' => 'active',
             'dosage' => '500 mg',
@@ -82,10 +85,13 @@ class UpdatePrescriptionTest extends TestCase
         $medication = Medication::factory()->create();
         $prescriber = User::factory()->doctor()->create();
 
+        $nurse = User::factory()->nurse()->create();
+
         $payload = [
             'patient_id' => $patient->id,
             'medication_id' => $medication->id,
             'prescriber_id' => $prescriber->id,
+            'nurse_id' => $nurse->id,
             'status' => 'active',
             'dosage' => '500 mg',
             'frequency' => 3,
@@ -144,11 +150,13 @@ class UpdatePrescriptionTest extends TestCase
         $medication = Medication::factory()->create();
         $newMedication = Medication::factory()->create();
         $prescriber = User::factory()->doctor()->create();
+        $nurse = User::factory()->nurse()->create();
 
         $payload = [
             'patient_id' => $patient->id,
             'medication_id' => $medication->id,
             'prescriber_id' => $prescriber->id,
+            'nurse_id' => $nurse->id,
             'status' => 'active',
             'dosage' => '500 mg',
             'frequency' => 3,
@@ -205,11 +213,13 @@ class UpdatePrescriptionTest extends TestCase
         $newPatient = Patient::factory()->create();
         $medication = Medication::factory()->create();
         $prescriber = User::factory()->doctor()->create();
+        $nurse = User::factory()->nurse()->create();
 
         $payload = [
             'patient_id' => $patient->id,
             'medication_id' => $medication->id,
             'prescriber_id' => $prescriber->id,
+            'nurse_id' => $nurse->id,
             'status' => 'active',
             'dosage' => '500 mg',
             'frequency' => 3,

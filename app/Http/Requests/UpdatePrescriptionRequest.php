@@ -24,6 +24,7 @@ class UpdatePrescriptionRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'nurse_id' => ['sometimes', 'required', Rule::exists('users', 'id')->where('role', 'nurse')],
             'dosage' => 'sometimes|string',
             'frequency' => 'sometimes|integer|min:1|max:24',
             'status' => 'sometimes|in:active,completed,stopped',

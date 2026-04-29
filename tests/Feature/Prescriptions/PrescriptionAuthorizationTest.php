@@ -18,11 +18,13 @@ class PrescriptionAuthorizationTest extends TestCase
         $medication = Medication::factory()->create();
         $prescriber = User::factory()->doctor()->create();
         $doctor = User::factory()->doctor()->create();
+        $nurse = User::factory()->nurse()->create();
 
         $payload = [
             'patient_id' => $patient->id,
             'medication_id' => $medication->id,
             'prescriber_id' => $prescriber->id,
+            'nurse_id' => $nurse->id,
             'status' => 'active',
             'dosage' => '500 mg',
             'frequency' => 3,
@@ -62,6 +64,7 @@ class PrescriptionAuthorizationTest extends TestCase
             'patient_id' => $patient->id,
             'medication_id' => $medication->id,
             'prescriber_id' => $prescriber->id,
+            'nurse_id' => $nurse->id,
             'status' => 'active',
             'dosage' => '500 mg',
             'frequency' => 3,

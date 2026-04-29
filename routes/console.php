@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('app:expire-prescriptions')->daily();
+Schedule::command('app:send-dose-reminders')->everyFifteenMinutes();

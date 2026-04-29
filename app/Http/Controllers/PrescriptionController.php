@@ -124,11 +124,13 @@ class PrescriptionController extends Controller
     public function options(Request $request)
     {
         $patientId = $request->query('patient_id');
+        $user = auth()->user();
 
         $prescriptions = Prescription::query()
             ->with(['medication:id,name'])
             ->where('status', 'active')
             ->where('patient_id', $patientId)
+            ->when($user->role === 'nurse', fn($q) => $q->where('nurse_id', $user->id))
             ->orderByDesc('id')
             ->get([
                 'id',

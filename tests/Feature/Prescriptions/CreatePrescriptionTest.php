@@ -37,11 +37,13 @@ class CreatePrescriptionTest extends TestCase
         $patient = Patient::factory()->create();
         $medication = Medication::factory()->create();
         $prescriber = User::factory()->doctor()->create();
+        $nurse = User::factory()->nurse()->create();
 
         $payload = [
             'patient_id' => $patient->id,
             'medication_id' => $medication->id,
             'prescriber_id' => $prescriber->id,
+            'nurse_id' => $nurse->id,
             'status' => 'active',
             'dosage' => '500 mg',
             'frequency' => 3,
@@ -125,6 +127,7 @@ class CreatePrescriptionTest extends TestCase
         $patient = Patient::factory()->create();
         $medication = Medication::factory()->create();
         $prescriber = User::factory()->doctor()->create();
+        $nurse = User::factory()->nurse()->create();
 
         $prescription = Prescription::factory()->create([
             'patient_id' => $patient->id,
@@ -139,6 +142,7 @@ class CreatePrescriptionTest extends TestCase
             'patient_id' => $patient->id,
             'medication_id' => $medication->id,
             'prescriber_id' => $prescriber->id,
+            'nurse_id' => $nurse->id,
             'status' => 'active',
             'dosage' => '300 mg',
             'frequency' => 1,

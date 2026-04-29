@@ -207,6 +207,7 @@ watch(
                         {{ sortDirection === 'asc' ? '↑' : '↓' }}
                     </span>
                 </th>
+                <th class="border px-3 py-2">Nurse</th>
                 <th class="border px-3 py-2">Dosage</th>
                 <th class="border px-3 py-2">Frequency</th>
                 <th
@@ -236,6 +237,7 @@ watch(
                 <td class="border px-3 py-2">{{ prescription.prescriber?.name || '-' }}</td>
                 <td class="border px-3 py-2">{{ prescription.medication?.name || '-' }}</td>
                 <td class="border px-3 py-2">{{ prescription.status }}</td>
+                <td class="border px-3 py-2">{{ prescription.nurse?.name || '-' }}</td>
                 <td class="border px-3 py-2">{{ prescription.dosage }}</td>
                 <td class="border px-3 py-2">{{ prescription.frequency }} x day</td>
                 <td class="border px-3 py-2">{{ prescription.start_date?.slice(0, 10) }}</td>

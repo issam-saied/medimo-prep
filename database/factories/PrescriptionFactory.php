@@ -23,7 +23,8 @@ class PrescriptionFactory extends Factory
         return [
             'patient_id' => \App\Models\Patient::factory(),
             'medication_id' => \App\Models\Medication::factory(),
-            'prescriber_id' => \App\Models\User::factory(),
+            'prescriber_id' => \App\Models\User::factory()->doctor(),
+            'nurse_id' => \App\Models\User::factory()->nurse(),
             'created_by_user_id' => \App\Models\User::factory(),
             'dosage' => fake()->randomElement(['500 mg', '250 mg']),
             'frequency' => fake()->numberBetween(1, 4),

@@ -26,6 +26,7 @@ class AdministrationAuthorizationTest extends TestCase
             'medication_id' => $medication->id,
             'prescriber_id' => $prescriber->id,
             'created_by_user_id' => $createdBy->id,
+            'nurse_id' => $nurse->id,
             'status' => 'active',
             'start_date' => now()->subDay()->toDateTimeString(),
             'end_date' => now()->addDay()->toDateTimeString(),

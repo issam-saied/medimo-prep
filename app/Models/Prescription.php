@@ -16,6 +16,7 @@ class Prescription extends Model
         'patient_id',
         'medication_id',
         'prescriber_id',
+        'nurse_id',
         'created_by_user_id',
         'dosage',
         'frequency',
@@ -42,6 +43,11 @@ class Prescription extends Model
     public function medication(): BelongsTo
     {
         return $this->belongsTo(Medication::class);
+    }
+
+    public function nurse(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'nurse_id');
     }
 
     public function administrations(): HasMany

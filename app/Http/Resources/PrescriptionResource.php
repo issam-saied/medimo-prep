@@ -44,6 +44,7 @@ class PrescriptionResource extends JsonResource
                 'organization' => $this->createdByUser->organization,
             ],
 
+            'nurse' => $this->nurse ? ['id' => $this->nurse->id, 'name' => $this->nurse->name] : null,
             'dosage' => $this->dosage,
             'frequency' => (int) $this->frequency,
             'status' => $this->status,
