@@ -41,6 +41,25 @@ const {
     }),
 })
 
+const exportData = async (format) => {
+    const params = new URLSearchParams({ format })
+    if (statusFilter.value) params.set('status', statusFilter.value)
+    const patient = patientNameFilter.value.trim()
+    const prescriber = prescriberNameFilter.value.trim()
+    const medication = medicationNameFilter.value.trim()
+    if (patient.length >= 2) params.set('patient_name', patient)
+    if (prescriber.length >= 2) params.set('prescriber_name', prescriber)
+    if (medication.length >= 2) params.set('medication_name', medication)
+
+    const response = await api.get(`/api/prescriptions/export?${params}`, { responseType: 'blob' })
+    const url = URL.createObjectURL(response.data)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `prescriptions.${format}`
+    a.click()
+    URL.revokeObjectURL(url)
+}
+
 const deletePrescription = async (prescription) => {
     if (!confirm(`Delete prescription for "${prescription.patient?.name}"? This cannot be undone.`)) return
     try {
@@ -110,6 +129,14 @@ watch(
                     class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
                 New Prescription
+            </button>
+            <button @click="exportData('csv')"
+                    class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+                Export CSV
+            </button>
+            <button @click="exportData('pdf')"
+                    class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+                Export PDF
             </button>
         </div>
 
