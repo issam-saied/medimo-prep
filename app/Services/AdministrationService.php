@@ -107,7 +107,7 @@ class AdministrationService
             }
 
             //Business rule: Nurse can only administer prescriptions assigned to them
-            if (auth()->user()->role === 'nurse' && $prescription->nurse_id !== auth()->id()) {
+            if (auth()->user()->hasRole('nurse') && $prescription->nurse_id !== auth()->id()) {
                 throw ValidationException::withMessages([
                     'prescription_id' => 'You are not the assigned nurse for this prescription.',
                 ]);

@@ -9,6 +9,7 @@ use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 #[Signature('app:send-dose-reminders')]
 #[Description('Send dose reminder notifications to assigned nurses based on prescription frequency')]
@@ -30,11 +31,16 @@ class SendDoseReminders extends Command
 
         foreach ($prescriptions as $prescription) {
             $frequency = $prescription->frequency;
-            $intervalHours = 24 / $frequency;
+            // Spread doses evenly from 08:00 to 20:00 (12-hour waking window)
+            // frequency=1 → [08:00]
+            // frequency=2 → [08:00, 20:00]
+            // frequency=3 → [08:00, 14:00, 20:00]
+            // frequency=4 → [08:00, 12:00, 16:00, 20:00]
+            $intervalMinutes = $frequency > 1 ? (12 * 60) / ($frequency - 1) : 0;
             $firstDose = Carbon::parse($today . ' 08:00:00');
 
             for ($i = 0; $i < $frequency; $i++) {
-                $doseTime = $firstDose->copy()->addHours($intervalHours * $i);
+                $doseTime = $firstDose->copy()->addMinutes($intervalMinutes * $i);
                 $doseNumber = $i + 1;
 
                 // Only notify if now is within ±7 minutes of the dose time
@@ -54,6 +60,7 @@ class SendDoseReminders extends Command
             }
         }
 
+        Log::info("SendDoseReminders: sent {$notified} dose reminder(s).");
         $this->info("Sent {$notified} dose reminder(s).");
     }
 }
